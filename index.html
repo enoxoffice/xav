@@ -413,7 +413,7 @@ function Invest({d,px,refresh,pxt,pxe,open,del,topup,setval}){
       <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><I n={a.type==="Emas"?"wallet":a.type==="Kripto"?"zap":a.type==="Saham"?"trend":"pie"}/></div>
       <div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{a.name}</p><p className="text-xs text-slate-400">{a.type} - {unit(a)}</p>{gn(a.goal)&&<p className="text-[11px] font-semibold text-emerald-700 truncate mt-0.5">Untuk: {gn(a.goal)}</p>}{a.manual&&<div className="flex gap-3 mt-1"><button onClick={()=>{const n=num(prompt("Nominal top up (Rp)"));n>0&&topup(a,n)}} className="text-[11px] font-bold text-emerald-700">Top up</button>{!(a.units>0&&a.nav>0)&&<button onClick={()=>{const v=num(prompt("Nilai saat ini di aplikasi (Rp)"));v>0&&setval(a.id,v)}} className="text-[11px] font-bold text-slate-500">Update nilai</button>}</div>}</div>
       <div className="text-right shrink-0"><p className="font-bold text-sm whitespace-nowrap">{rp(v)}</p><p className={"text-xs font-semibold "+(p>=0?"text-emerald-600":"text-red-500")}>{p>=0?"+":""}{sh(p)}</p></div>
-      <button onClick={()=>confirm("Hapus aset ini?")&&del(a.id)} aria-label="Hapus aset" className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></Card>})}</div>:<Card><Empty t="Belum ada aset investasi."/></Card>}
+      <button onClick={()=>confirm("Hapus aset ini beserta transaksi pembelian/top up-nya? Saldo dikembalikan.")&&del(a.id)} aria-label="Hapus aset" className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></Card>})}</div>:<Card><Empty t="Belum ada aset investasi."/></Card>}
   </div>;
 }
 
@@ -443,12 +443,12 @@ function Manager({d,px,setD,toast}){
   const eta=n=>{const t=new Date();t.setMonth(t.getMonth()+n);return t.toLocaleDateString("id-ID",{month:"long",year:"numeric"})};
   const addBill=()=>{const a=num(bf.amt),t=num(bf.tenor),p0=num(bf.paid),l=p0&&a?Math.max(0,t-Math.floor(p0/a)):(bf.left===""?t:Math.min(t,num(bf.left)));if(!bf.name.trim()||!a||!t)return;if(l<1){toast("Cicilan itu sudah lunas, tidak perlu dicatat.");return}up({bills:[...m.bills,{id:uid(),name:bf.name.trim(),amt:a,tenor:t,left:l,paid:p0||(t-l)*a,due:Math.min(31,num(bf.due))||new Date().getDate(),last:p0?mk:""}]});setBf({name:"",amt:"",tenor:"",left:"",due:"",paid:""})};
   const paidOf=b=>b.paid!=null?b.paid:(b.tenor-b.left)*b.amt;
-  const payBill=b=>{const v=prompt("Nominal pembayaran (Rp). Boleh lebih dari cicilan bulanan.",String(b.amt));if(v===null)return;const n=num(v);if(!n)return;const pd=paidOf(b)+n,tot=b.amt*b.tenor;addTx({type:"expense",amt:n,cat:"Cicilan",note:"Cicilan: "+b.name});up({bills:m.bills.map(x=>x.id===b.id?{...x,paid:pd,left:Math.max(0,Math.ceil((tot-pd)/b.amt)),last:mk}:x).filter(x=>x.left>0)});toast(pd>=tot?"Cicilan lunas: "+b.name:"Dibayar "+rp(n)+" untuk "+b.name)};
+  const payBill=b=>{const v=prompt("Nominal pembayaran (Rp). Boleh lebih dari cicilan bulanan.",String(b.amt));if(v===null)return;const n=num(v);if(!n)return;const pd=paidOf(b)+n,tot=b.amt*b.tenor;addTx({type:"expense",amt:n,cat:"Cicilan",note:"Cicilan: "+b.name,ref:b.id});up({bills:m.bills.map(x=>x.id===b.id?{...x,paid:pd,left:Math.max(0,Math.ceil((tot-pd)/b.amt)),last:mk}:x).filter(x=>x.left>0)});toast(pd>=tot?"Cicilan lunas: "+b.name:"Dibayar "+rp(n)+" untuk "+b.name)};
   const addDream=()=>{const t=num(df.target),n=num(df.months);if(!df.name.trim()||!t||!n)return;up({dreams:[...m.dreams,{id:uid(),name:df.name.trim(),target:t,saved:0,months:n}]});setDf({name:"",target:"",months:""})};
   const tgt=x=>d.inv.filter(a=>a.goal===x.id&&a.manual&&!(a.units>0&&a.nav>0));
   const deposit=x=>{const n=num(dep[x.id]);if(!n)return;const t=dst[x.id];
-    if(t){const a=d.inv.find(y=>y.id===t);if(!a)return;setD(s=>({...s,tx:[{id:uid(),type:"transfer",amt:n,cat:"Investasi",note:"Setor ke "+a.name+" ("+x.name+")",date:iso(new Date())},...s.tx],inv:s.inv.map(y=>y.id===t?{...y,cost:(y.cost||0)+n,cur:y.cur?y.cur+n:y.cur}:y)}))}
-    else{addTx({type:"transfer",amt:n,cat:"Tabungan",note:"Setor: "+x.name});up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:y.saved+n}:y)})}
+    if(t){const a=d.inv.find(y=>y.id===t);if(!a)return;setD(s=>({...s,tx:[{id:uid(),type:"transfer",amt:n,cat:"Investasi",note:"Setor ke "+a.name+" ("+x.name+")",date:iso(new Date()),ref:t},...s.tx],inv:s.inv.map(y=>y.id===t?{...y,cost:(y.cost||0)+n,cur:y.cur?y.cur+n:y.cur}:y)}))}
+    else{addTx({type:"transfer",amt:n,cat:"Tabungan",note:"Setor: "+x.name,ref:x.id});up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:y.saved+n}:y)})}
     setDep({...dep,[x.id]:""});toast("Disetor "+rp(n)+" untuk "+x.name)};
   const hasEf=m.dreams.some(x=>/darurat/i.test(x.name));
   return <div className="st space-y-5">
@@ -476,7 +476,7 @@ function Manager({d,px,setD,toast}){
       <Btn className="w-full mb-4 flex items-center justify-center gap-1.5" onClick={addBill}><I n="plus" s={16}/>Tambah tagihan</Btn>
       {m.bills.length?m.bills.map(b=>{const tot=b.amt*b.tenor,pd=Math.min(tot,paidOf(b)),pc=pd/tot*100;return <div key={b.id} className="pgb rounded-xl bg-slate-50 p-3 mb-2">
         <div className="flex items-center justify-between gap-2"><div className="min-w-0"><p className="font-semibold text-sm truncate">{b.name}</p><p className="text-xs text-slate-400">{rp(b.amt)}/bln - sisa {b.left} dari {b.tenor} bulan - terbayar {rp(pd)} dari {rp(tot)}</p></div>
-          <div className="flex items-center gap-1 shrink-0"><Btn className="!py-1.5 !px-3 !text-xs disabled:opacity-50" disabled={!b.left} onClick={()=>payBill(b)}>Bayar</Btn><button aria-label="Hapus tagihan" onClick={()=>confirm("Hapus tagihan ini?")&&up({bills:m.bills.filter(x=>x.id!==b.id)})} className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></div></div>
+          <div className="flex items-center gap-1 shrink-0"><Btn className="!py-1.5 !px-3 !text-xs disabled:opacity-50" disabled={!b.left} onClick={()=>payBill(b)}>Bayar</Btn><button aria-label="Hapus tagihan" onClick={()=>confirm("Hapus tagihan ini beserta transaksi pembayarannya? Saldo dikembalikan.")&&setD(s=>({...s,tx:s.tx.filter(t=>t.ref!==b.id&&t.note!=="Cicilan: "+b.name),mm:{...s.mm,bills:s.mm.bills.filter(x=>x.id!==b.id)}}))} className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></div></div>
         <div className="h-2 rounded-full bg-slate-200 overflow-hidden mt-2"><div className="bar h-full rounded-full bg-emerald-500" style={{width:pc+"%"}}/></div>
         <p className="text-[11px] text-slate-500 mt-1.5">{pc.toFixed(0)}% terbayar - {b.left?"estimasi lunas "+eta(b.left):"Lunas"}{b.due&&b.left?" - jatuh tempo tgl "+b.due:""}</p></div>}):<Empty t="Belum ada cicilan atau tagihan."/>}
     </Card>
@@ -485,7 +485,7 @@ function Manager({d,px,setD,toast}){
         <Lbl t="Target nominal"><MoneyIn v={df.target} set={v=>setDf({...df,target:v})} ph="30.000.000"/></Lbl><Lbl t="Tenggat (bulan lagi)"><MoneyIn rpx={false} v={df.months} set={v=>setDf({...df,months:v})} ph="12"/></Lbl></div>
       <Btn className="w-full mb-4 flex items-center justify-center gap-1.5" onClick={addDream}><I n="plus" s={16}/>Tambah target</Btn>
       {m.dreams.length?<>{m.dreams.map(x=>{const sv=dsum(x),pc=Math.min(100,sv/x.target*100);return <div key={x.id} className="pgb rounded-xl bg-slate-50 p-3 mb-2">
-        <div className="flex items-center justify-between gap-2"><p className="font-semibold text-sm truncate">{x.name}</p><div className="flex items-center shrink-0">{x.saved>0&&<button onClick={()=>{const v=prompt("Koreksi tabungan kas target ini (Rp). Tidak mengubah saldo kas.",String(x.saved));if(v===null)return;up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:num(v)}:y)});toast("Tabungan dikoreksi")}} className="text-[11px] font-bold text-slate-500 mr-1">Koreksi</button>}<button aria-label="Hapus target" onClick={()=>confirm("Hapus target ini?")&&up({dreams:m.dreams.filter(y=>y.id!==x.id)})} className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></div></div>
+        <div className="flex items-center justify-between gap-2"><p className="font-semibold text-sm truncate">{x.name}</p><div className="flex items-center shrink-0">{x.saved>0&&<button onClick={()=>{const v=prompt("Koreksi tabungan kas target ini (Rp). Tidak mengubah saldo kas.",String(x.saved));if(v===null)return;up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:num(v)}:y)});toast("Tabungan dikoreksi")}} className="text-[11px] font-bold text-slate-500 mr-1">Koreksi</button>}<button aria-label="Hapus target" onClick={()=>confirm("Hapus target ini beserta transaksi setorannya? Saldo dikembalikan.")&&setD(s=>({...s,tx:s.tx.filter(t=>t.ref!==x.id&&t.note!=="Setor: "+x.name),mm:{...s.mm,dreams:s.mm.dreams.filter(y=>y.id!==x.id)}}))} className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></div></div>
         <p className="text-xs text-slate-400">Target {rp(x.target)} dalam {x.months} bulan</p>
         <div className="h-2 rounded-full bg-slate-200 overflow-hidden mt-2"><div className="bar h-full rounded-full bg-emerald-500" style={{width:pc+"%"}}/></div>
         <div className="flex justify-between text-xs mt-1.5"><span className="text-slate-500">{pc.toFixed(0)}% ({rp(sv)})</span><span className="font-bold text-emerald-700">Setoran {rp(mo(x))}/bln</span></div>
@@ -506,7 +506,7 @@ function App(){
   useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}},[d]);
   useEffect(()=>{const t=new Date(),mk=iso(t).slice(0,7),day=t.getDate(),dt=iso(t);
     setD(s=>{const m=s.mm;let tx=s.tx,ch=false,trLast=m.trLast;
-      const bills=m.bills.map(b=>{if(b.left>0&&b.last!==mk&&day>=(b.due||1)){ch=true;tx=[{id:uid(),type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name,date:dt},...tx];return{...b,paid:(b.paid!=null?b.paid:(b.tenor-b.left)*b.amt)+b.amt,left:Math.max(0,b.left-1),last:mk}}return b}).filter(b=>b.left>0);if(bills.length!==m.bills.length)ch=true;
+      const bills=m.bills.map(b=>{if(b.left>0&&b.last!==mk&&day>=(b.due||1)){ch=true;tx=[{id:uid(),type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name,date:dt,ref:b.id},...tx];return{...b,paid:(b.paid!=null?b.paid:(b.tenor-b.left)*b.amt)+b.amt,left:Math.max(0,b.left-1),last:mk}}return b}).filter(b=>b.left>0);if(bills.length!==m.bills.length)ch=true;
       const cm=Math.round(num(m.amt)*dec(m.freq)*4.33);
       if(m.trAuto&&cm>0&&trLast!==mk){ch=true;trLast=mk;tx=[{id:uid(),type:"expense",amt:cm,cat:"Transportasi",note:"Transportasi bulanan",date:dt},...tx]}
       return ch?{...s,tx,mm:{...m,bills,trLast}}:s})},[d.mm.bills.length,d.mm.trAuto]);
@@ -542,7 +542,7 @@ function App(){
   const save=x=>{
     if(modal==="tx"){setD(s=>({...s,tx:[x,...s.tx]}));setFresh(x.id);nav("home");toast("Transaksi tersimpan")}
     if(modal==="goal"){setD(s=>({...s,goals:[x,...s.goals]}));nav("goals");toast("Tujuan dibuat")}
-    if(modal==="inv"){const {fromCash,...a}=x;setD(s=>({...s,inv:[...s.inv,a],tx:fromCash&&a.cost?[{id:uid(),type:"transfer",amt:a.cost,cat:"Investasi",note:"Beli: "+a.name,date:iso(new Date())},...s.tx]:s.tx}));nav("invest");toast("Investasi ditambahkan")}
+    if(modal==="inv"){const {fromCash,...a}=x;setD(s=>({...s,inv:[...s.inv,a],tx:fromCash&&a.cost?[{id:uid(),type:"transfer",amt:a.cost,cat:"Investasi",note:"Beli: "+a.name,date:iso(new Date()),ref:a.id},...s.tx]:s.tx}));nav("invest");toast("Investasi ditambahkan")}
   };
   const addSave=(id,n)=>{
     const gg=d.goals.find(x=>x.id===id);if(!gg)return;
@@ -568,7 +568,7 @@ function App(){
       {tab==="home"&&<Home d={d} px={px} setTab={nav} open={setModal} fresh={fresh} reset={()=>confirm("Ganti semua data dengan data contoh?")&&setD(sample())} clear={()=>confirm("Hapus semua data?")&&setD({tx:[],goals:[],inv:[],mm:{mode:"pri",amt:"",freq:"",bills:[],dreams:[]}})}/>}
       {tab==="analytics"&&<Analytics d={d}/>}
       {tab==="manager"&&<Manager d={d} px={px} setD={setD} toast={toast}/>}
-      {tab==="invest"&&<Invest d={d} px={px} refresh={refresh} pxt={pxt} pxe={pxe} open={setModal} del={id=>setD(s=>({...s,inv:s.inv.filter(a=>a.id!==id)}))} topup={(a,n)=>{setD(s=>({...s,tx:[{id:uid(),type:"transfer",amt:n,cat:"Investasi",note:"Top up: "+a.name,date:iso(new Date())},...s.tx],inv:s.inv.map(x=>x.id===a.id?{...x,cost:(x.cost||0)+n,cur:x.cur?x.cur+n:x.cur}:x)}));toast("Top up "+a.name+": "+rp(n))}} setval={(id,v)=>{setD(s=>({...s,inv:s.inv.map(x=>x.id===id?{...x,cur:v}:x)}));toast("Nilai diperbarui")}}/>}
+      {tab==="invest"&&<Invest d={d} px={px} refresh={refresh} pxt={pxt} pxe={pxe} open={setModal} del={id=>setD(s=>({...s,tx:s.tx.filter(t=>t.ref!==id),inv:s.inv.filter(a=>a.id!==id)}))} topup={(a,n)=>{setD(s=>({...s,tx:[{id:uid(),type:"transfer",amt:n,cat:"Investasi",note:"Top up: "+a.name,date:iso(new Date()),ref:a.id},...s.tx],inv:s.inv.map(x=>x.id===a.id?{...x,cost:(x.cost||0)+n,cur:x.cur?x.cur+n:x.cur}:x)}));toast("Top up "+a.name+": "+rp(n))}} setval={(id,v)=>{setD(s=>({...s,inv:s.inv.map(x=>x.id===id?{...x,cur:v}:x)}));toast("Nilai diperbarui")}}/>}
     </main>
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/90 backdrop-blur border-t border-slate-100" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>
       <div className="relative grid grid-cols-4">
