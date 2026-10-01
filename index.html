@@ -424,7 +424,7 @@ function AllocChart({v}){
 }
 function Manager({d,px,setD,toast}){
   const m=d.mm,up=p=>setD(s=>({...s,mm:{...s.mm,...p}})),addTx=o=>setD(s=>({...s,tx:[{id:uid(),date:iso(new Date()),...o},...s.tx]}));
-  const [bf,setBf]=useState({name:"",amt:"",tenor:"",left:"",due:""}),[df,setDf]=useState({name:"",target:"",months:""}),[dep,setDep]=useState({});
+  const [bf,setBf]=useState({name:"",amt:"",tenor:"",left:"",due:"",paid:""}),[df,setDf]=useState({name:"",target:"",months:""}),[dep,setDep]=useState({});
   const mk=iso(new Date()).slice(0,7),pri=m.mode==="pri";
   const sal=useMemo(()=>{const g=d.tx.filter(t=>t.type==="income"&&t.cat==="Gaji");const cur=g.filter(t=>t.date.startsWith(mk)).reduce((s,t)=>s+t.amt,0);if(cur)return cur;const l=[...g].sort((a,b)=>b.date.localeCompare(a.date))[0];return l?l.amt:0},[d.tx]);
   const commute=Math.round(num(m.amt)*dec(m.freq)*4.33);
@@ -438,8 +438,9 @@ function Manager({d,px,setD,toast}){
   const mo=x=>Math.max(0,Math.ceil((x.target-dsum(x))/x.months));
   const gTot=m.dreams.reduce((s,x)=>s+mo(x),0);
   const eta=n=>{const t=new Date();t.setMonth(t.getMonth()+n);return t.toLocaleDateString("id-ID",{month:"long",year:"numeric"})};
-  const addBill=()=>{const a=num(bf.amt),t=num(bf.tenor),l=bf.left===""?t:Math.min(t,num(bf.left));if(!bf.name.trim()||!a||!t)return;up({bills:[...m.bills,{id:uid(),name:bf.name.trim(),amt:a,tenor:t,left:l,due:Math.min(31,num(bf.due)),last:""}]});setBf({name:"",amt:"",tenor:"",left:"",due:""})};
-  const payBill=b=>{addTx({type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name});up({bills:m.bills.map(x=>x.id===b.id?{...x,left:x.left-1,last:mk}:x)});toast("Cicilan dibayar: "+b.name+" ("+rp(b.amt)+")")};
+  const addBill=()=>{const a=num(bf.amt),t=num(bf.tenor),p0=num(bf.paid),l=p0&&a?Math.max(0,t-Math.floor(p0/a)):(bf.left===""?t:Math.min(t,num(bf.left)));if(!bf.name.trim()||!a||!t)return;up({bills:[...m.bills,{id:uid(),name:bf.name.trim(),amt:a,tenor:t,left:l,paid:p0||(t-l)*a,due:Math.min(31,num(bf.due)),last:""}]});setBf({name:"",amt:"",tenor:"",left:"",due:"",paid:""})};
+  const paidOf=b=>b.paid!=null?b.paid:(b.tenor-b.left)*b.amt;
+  const payBill=b=>{const v=prompt("Nominal pembayaran (Rp). Boleh lebih dari cicilan bulanan.",String(b.amt));if(v===null)return;const n=num(v);if(!n)return;const pd=paidOf(b)+n,tot=b.amt*b.tenor;addTx({type:"expense",amt:n,cat:"Cicilan",note:"Cicilan: "+b.name});up({bills:m.bills.map(x=>x.id===b.id?{...x,paid:pd,left:Math.max(0,Math.ceil((tot-pd)/b.amt)),last:mk}:x)});toast("Dibayar "+rp(n)+" untuk "+b.name)};
   const addDream=()=>{const t=num(df.target),n=num(df.months);if(!df.name.trim()||!t||!n)return;up({dreams:[...m.dreams,{id:uid(),name:df.name.trim(),target:t,saved:0,months:n}]});setDf({name:"",target:"",months:""})};
   const deposit=x=>{const n=num(dep[x.id]);if(!n)return;addTx({type:"transfer",amt:n,cat:"Tabungan",note:"Setor: "+x.name});up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:y.saved+n}:y)});setDep({...dep,[x.id]:""});toast("Disetor ke "+x.name+": "+rp(n))};
   const hasEf=m.dreams.some(x=>/darurat/i.test(x.name));
@@ -463,10 +464,10 @@ function Manager({d,px,setD,toast}){
     </Card>
     <Card className="p-5"><h2 className="font-bold mb-3">Cicilan & tagihan tetap</h2>
       <div className="grid grid-cols-2 gap-x-3"><Lbl t="Nama tagihan"><input className={inp} value={bf.name} onChange={e=>setBf({...bf,name:e.target.value})} placeholder="Cicilan motor"/></Lbl><Lbl t="Nominal bulanan"><MoneyIn v={bf.amt} set={v=>setBf({...bf,amt:v})} ph="900.000"/></Lbl>
-        <Lbl t="Tenor total (bulan)"><MoneyIn rpx={false} v={bf.tenor} set={v=>setBf({...bf,tenor:v})} ph="24"/></Lbl><Lbl t="Sisa tenor (opsional)"><MoneyIn rpx={false} v={bf.left} set={v=>setBf({...bf,left:v})} ph="sama dengan tenor"/></Lbl><div className="col-span-2"><Lbl t="Tanggal jatuh tempo (opsional, dipotong otomatis dari saldo)"><MoneyIn rpx={false} v={bf.due} set={v=>setBf({...bf,due:v})} ph="25"/></Lbl></div></div>
+        <Lbl t="Tenor total (bulan)"><MoneyIn rpx={false} v={bf.tenor} set={v=>setBf({...bf,tenor:v})} ph="24"/></Lbl><Lbl t="Sisa tenor (opsional)"><MoneyIn rpx={false} v={bf.left} set={v=>setBf({...bf,left:v})} ph="sama dengan tenor"/></Lbl><div className="col-span-2"><Lbl t="Sudah dibayar sebelumnya (opsional, tidak memotong saldo)"><MoneyIn v={bf.paid} set={v=>setBf({...bf,paid:v})} ph="0"/></Lbl></div><div className="col-span-2"><Lbl t="Tanggal jatuh tempo (opsional, dipotong otomatis dari saldo)"><MoneyIn rpx={false} v={bf.due} set={v=>setBf({...bf,due:v})} ph="25"/></Lbl></div></div>
       <Btn className="w-full mb-4 flex items-center justify-center gap-1.5" onClick={addBill}><I n="plus" s={16}/>Tambah tagihan</Btn>
-      {m.bills.length?m.bills.map(b=>{const pc=(b.tenor-b.left)/b.tenor*100;return <div key={b.id} className="pgb rounded-xl bg-slate-50 p-3 mb-2">
-        <div className="flex items-center justify-between gap-2"><div className="min-w-0"><p className="font-semibold text-sm truncate">{b.name}</p><p className="text-xs text-slate-400">{rp(b.amt)}/bln - sisa {b.left} dari {b.tenor} bulan</p></div>
+      {m.bills.length?m.bills.map(b=>{const tot=b.amt*b.tenor,pd=Math.min(tot,paidOf(b)),pc=pd/tot*100;return <div key={b.id} className="pgb rounded-xl bg-slate-50 p-3 mb-2">
+        <div className="flex items-center justify-between gap-2"><div className="min-w-0"><p className="font-semibold text-sm truncate">{b.name}</p><p className="text-xs text-slate-400">{rp(b.amt)}/bln - sisa {b.left} dari {b.tenor} bulan - terbayar {rp(pd)} dari {rp(tot)}</p></div>
           <div className="flex items-center gap-1 shrink-0"><Btn className="!py-1.5 !px-3 !text-xs disabled:opacity-50" disabled={!b.left} onClick={()=>payBill(b)}>Bayar</Btn><button aria-label="Hapus tagihan" onClick={()=>confirm("Hapus tagihan ini?")&&up({bills:m.bills.filter(x=>x.id!==b.id)})} className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></div></div>
         <div className="h-2 rounded-full bg-slate-200 overflow-hidden mt-2"><div className="bar h-full rounded-full bg-emerald-500" style={{width:pc+"%"}}/></div>
         <p className="text-[11px] text-slate-500 mt-1.5">{pc.toFixed(0)}% terbayar - {b.left?"estimasi lunas "+eta(b.left):"Lunas"}{b.due&&b.left?" - jatuh tempo tgl "+b.due:""}</p></div>}):<Empty t="Belum ada cicilan atau tagihan."/>}
@@ -496,7 +497,7 @@ function App(){
   useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}},[d]);
   useEffect(()=>{const t=new Date(),mk=iso(t).slice(0,7),day=t.getDate(),dt=iso(t);
     setD(s=>{const m=s.mm;let tx=s.tx,ch=false,trLast=m.trLast;
-      const bills=m.bills.map(b=>{if(b.due&&b.left>0&&b.last!==mk&&day>=b.due){ch=true;tx=[{id:uid(),type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name,date:dt},...tx];return{...b,left:b.left-1,last:mk}}return b});
+      const bills=m.bills.map(b=>{if(b.due&&b.left>0&&b.last!==mk&&day>=b.due){ch=true;tx=[{id:uid(),type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name,date:dt},...tx];return{...b,paid:(b.paid!=null?b.paid:(b.tenor-b.left)*b.amt)+b.amt,left:Math.max(0,b.left-1),last:mk}}return b});
       const cm=Math.round(num(m.amt)*dec(m.freq)*4.33);
       if(m.trAuto&&cm>0&&trLast!==mk){ch=true;trLast=mk;tx=[{id:uid(),type:"expense",amt:cm,cat:"Transportasi",note:"Transportasi bulanan",date:dt},...tx]}
       return ch?{...s,tx,mm:{...m,bills,trLast}}:s})},[d.mm.bills.length,d.mm.trAuto]);
