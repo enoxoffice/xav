@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Xav</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#F9FAFB;color:#0f172a;-webkit-tap-highlight-color:transparent}
+@keyframes pg{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes row{from{opacity:0;transform:translateX(-12px);background:#d1fae5}to{opacity:1;transform:none}}
+.pg{animation:pg .35s ease both}.pop{animation:pop .3s cubic-bezier(.2,.8,.2,1) both}.fade{animation:fade .2s both}.row{animation:row .6s ease both}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #059669;outline-offset:2px}
+.bar{transition:width .6s ease}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useMemo}=React;
+const P={
+home:["M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z","M9 22V12h6v10"],
+chart:["M3 3v18h18","M18 17V9","M13 17V5","M8 17v-3"],
+target:["M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z","M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z","M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"],
+trend:["M22 7l-8.5 8.5-5-5L2 17","M16 7h6v6"],
+wallet:["M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1","M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"],
+up:["M7 7h10v10","M7 17L17 7"],down:["M17 7L7 17","M17 17H7V7"],
+plus:["M5 12h14","M12 5v14"],x:["M18 6L6 18","M6 6l12 12"],
+reset:["M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8","M3 3v5h5"],
+zap:["M13 2L3 14h9l-1 8 10-12h-9z"],trash:["M3 6h18","M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6","M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"],
+pie:["M21.21 15.89A10 10 0 1 1 8 2.83","M22 12A10 10 0 0 0 12 2v10z"],
+check:["M20 6L9 17l-5-5"]
+};
+const I=({n,s=20,c=""})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c} aria-hidden="true">{P[n].map((d,i)=><path key={i} d={d}/>)}</svg>;
+
+const rp=n=>(n<0?"-":"")+"Rp"+Math.round(Math.abs(n)).toLocaleString("id-ID");
+const sh=n=>n>=1e6?(n/1e6).toFixed(1).replace(".0","")+"jt":n>=1e3?Math.round(n/1e3)+"rb":Math.round(n)+"";
+const iso=d=>{const x=new Date(d);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
+const ago=n=>{const d=new Date();d.setDate(d.getDate()-n);return iso(d)};
+const diffD=s=>{const t=new Date();t.setHours(0,0,0,0);return Math.round((t-new Date(s+"T00:00:00"))/864e5)};
+const fd=s=>new Date(s+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+const CAT={Food:"#059669",Transport:"#0ea5e9",Shopping:"#f59e0b",Entertainment:"#8b5cf6",Health:"#ef4444",Bills:"#64748b",Salary:"#047857",Freelance:"#10b981"};
+const EXP=["Food","Transport","Shopping","Entertainment","Health","Bills"],INC=["Salary","Freelance"];
+const ITYPE=["Saham","Reksadana","Crypto","Emas"];
+
+function sample(){
+  let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;
+  const tx=[];
+  for(let i=0;i<400;i++){
+    const d=ago(i),day=Number(d.slice(8,10));
+    if(day===25)tx.push({id:uid()+i+"s",type:"income",amt:12e6,cat:"Salary",note:"Gaji bulanan",date:d});
+    if(r()<.04)tx.push({id:uid()+i+"f",type:"income",amt:(1+Math.floor(r()*4))*5e5,cat:"Freelance",note:"Proyek freelance",date:d});
+    const n=r()<.7?1:2;
+    for(let k=0;k<n;k++){const c=EXP[Math.floor(r()*r()*6)];const base={Food:45e3,Transport:25e3,Shopping:2e5,Entertainment:12e4,Health:15e4,Bills:3e5}[c];
+      tx.push({id:uid()+i+k,type:"expense",amt:Math.round(base*(.5+r())/5e3)*5e3,cat:c,note:{Food:"Makan siang",Transport:"Ojek online",Shopping:"Belanja bulanan",Entertainment:"Nonton & hiburan",Health:"Apotek",Bills:"Tagihan listrik/internet"}[c],date:d});}
+  }
+  const g=(name,target,saved,alloc,h)=>({id:uid(),name,target,saved,alloc,hist:h.map((a,i)=>({d:ago(5+i*14),amt:a}))});
+  const inv=[
+    {id:uid(),name:"BBCA",type:"Saham",sym:"BBCA.JK",kind:"idr",units:1000,cost:null},
+    {id:uid(),name:"BMRI",type:"Saham",sym:"BMRI.JK",kind:"idr",units:1500,cost:null},
+    {id:uid(),name:"Bitcoin",type:"Crypto",sym:"BTC-USD",kind:"usd",units:0.02,cost:null},
+    {id:uid(),name:"Emas",type:"Emas",sym:"GC=F",kind:"gold",units:10,cost:null},
+    {id:uid(),name:"Reksadana Pasar Uang",type:"Reksadana",manual:true,units:5000,nav:1520,cost:7500000}];
+  return{tx,inv,goals:[
+    g("Tabungan Jalan-jalan",15e6,6.5e6,[{p:"Reksadana Pasar Uang",amt:4e6},{p:"Tabungan Digital",amt:2.5e6}],[1e6,1.5e6,2e6,2e6]),
+    g("Uang Darurat",36e6,21e6,[{p:"Emas Antam",amt:9e6},{p:"Reksadana Pasar Uang",amt:12e6}],[3e6,3e6,5e6,5e6,5e6]),
+    g("DP Rumah",150e6,42e6,[{p:"BBCA",amt:15e6},{p:"Reksadana Saham",amt:12e6},{p:"Deposito",amt:15e6}],[8e6,10e6,12e6,12e6]),
+    g("Laptop Baru",18e6,11e6,[{p:"Tabungan Digital",amt:11e6}],[3e6,4e6,4e6]),
+    g("Dana Pendidikan",60e6,9e6,[{p:"Reksadana Saham",amt:9e6}],[4e6,5e6])]};
+}
+const KEY="xav_v2";
+const load=()=>{try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.tx&&x.goals&&x.inv)return x}catch(e){}return sample()};
+const pr=(a,px)=>a.manual?a.units*a.nav:(px[a.sym]&&px[a.sym].price?a.units*px[a.sym].price:null);
+const val=(a,px)=>{const v=pr(a,px);return v==null?(a.cost||0):v};
+const ser=(a,px)=>a.manual?null:(px[a.sym]&&px[a.sym].series)||null;
+const st=s=>s&&s.length>5?s[s.length-1]/s[s.length-6]-1:0;
+
+const Card=({className="",children,...p})=><div className={"bg-white rounded-2xl border border-slate-100 shadow-sm "+className} {...p}>{children}</div>;
+const Empty=({t})=><div className="py-10 text-center text-sm text-slate-400">{t}</div>;
+
+function Spark({data,color,h=36,w=110}){
+  const mn=Math.min(...data),mx=Math.max(...data),sp=mx-mn||1;
+  const pts=data.map((v,i)=>(i/(data.length-1)*w).toFixed(1)+","+(h-4-((v-mn)/sp)*(h-8)).toFixed(1)).join(" ");
+  return <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}><polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/></svg>;
+}
+function Line({data,h=150}){
+  const w=400,mn=Math.min(...data),mx=Math.max(...data),sp=mx-mn||1;
+  const pts=data.map((v,i)=>[i/(data.length-1)*w,h-12-((v-mn)/sp)*(h-28)]);
+  const l=pts.map(p=>p.join(",")).join(" ");
+  return <svg viewBox={`0 0 ${w} ${h}`} className="w-full"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#059669" stopOpacity=".25"/><stop offset="1" stopColor="#059669" stopOpacity="0"/></linearGradient></defs>
+    <polygon points={`0,${h} ${l} ${w},${h}`} fill="url(#lg)"/><polyline points={l} fill="none" stroke="#059669" strokeWidth="2.5" strokeLinejoin="round"/>
+    <circle cx={pts[pts.length-1][0]-3} cy={pts[pts.length-1][1]} r="4" fill="#059669"/></svg>;
+}
+function Bars({b}){
+  const mx=Math.max(1,...b.flatMap(x=>[x.inc,x.exp])),W=400,H=170,bw=W/b.length;
+  return <svg viewBox={`0 0 ${W} ${H+22}`} className="w-full">
+    {[0,.5,1].map(f=><line key={f} x1="0" x2={W} y1={H-f*(H-10)} y2={H-f*(H-10)} stroke="#f1f5f9"/>)}
+    {b.map((x,i)=>{const cw=Math.min(14,bw/3),hi=x.inc/mx*(H-10),he=x.exp/mx*(H-10),cx=i*bw+bw/2;
+      return <g key={i}><rect x={cx-cw-1} y={H-hi} width={cw} height={hi} rx="3" fill="#059669"/><rect x={cx+1} y={H-he} width={cw} height={he} rx="3" fill="#a7f3d0"/>
+      <text x={cx} y={H+15} textAnchor="middle" fontSize="10" fill="#94a3b8">{x.l}</text></g>})}
+  </svg>;
+}
+function Donut({items,total}){
+  let acc=0;
+  return <svg viewBox="0 0 42 42" className="w-40 h-40 shrink-0 -rotate-90"><circle cx="21" cy="21" r="15.9155" fill="none" stroke="#f1f5f9" strokeWidth="5"/>
+    {items.map(([c,v])=>{const p=v/total*100,o=acc;acc+=p;return <circle key={c} cx="21" cy="21" r="15.9155" fill="none" stroke={CAT[c]} strokeWidth="5" strokeDasharray={`${Math.max(p-.6,0.1)} ${100-Math.max(p-.6,0.1)}`} strokeDashoffset={-o}/>})}
+  </svg>;
+}
+
+function TxRow({t,fresh}){
+  const inc=t.type==="income";
+  return <div className={"flex items-center gap-3 py-3 "+(fresh?"row":"")}>
+    <div className={"w-10 h-10 rounded-xl flex items-center justify-center shrink-0 "+(inc?"bg-emerald-50 text-emerald-700":"bg-slate-100 text-slate-600")}><I n={inc?"down":"up"} s={18}/></div>
+    <div className="min-w-0 flex-1"><p className="text-sm font-semibold truncate">{t.note||t.cat}</p><p className="text-xs text-slate-400">{t.cat} - {fd(t.date)}</p></div>
+    <p className={"text-sm font-bold whitespace-nowrap "+(inc?"text-emerald-600":"text-slate-800")}>{inc?"+":"-"}{rp(t.amt)}</p>
+  </div>;
+}
+
+function Modal({title,onClose,children,wide}){
+  useEffect(()=>{const k=e=>e.key==="Escape"&&onClose();addEventListener("keydown",k);return()=>removeEventListener("keydown",k)},[]);
+  return <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm fade" onClick={onClose}/>
+    <div className={"relative bg-white w-full rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto pop "+(wide?"sm:max-w-lg":"sm:max-w-md")} role="dialog" aria-modal="true">
+      <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-bold">{title}</h3>
+        <button onClick={onClose} aria-label="Tutup" className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center"><I n="x" s={18}/></button></div>
+      {children}
+    </div></div>;
+}
+const inp="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:bg-white focus:border-emerald-500";
+const Lbl=({t,children})=><label className="block mb-3"><span className="block text-xs font-semibold text-slate-500 mb-1.5">{t}</span>{children}</label>;
+const Btn=({className="",...p})=><button {...p} className={"rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[.98] text-white font-semibold px-5 py-3 text-sm transition "+className}/>;
+
+function AddModal({kind,onClose,onSave}){
+  const [f,setF]=useState({type:"expense",amt:"",cat:"Food",note:"",date:iso(new Date()),name:"",target:"",saved:"",itype:"Saham",code:"",units:"",nav:""});
+  const [err,setErr]=useState("");
+  const u=(k,v)=>setF(s=>({...s,[k]:v}));
+  const num=v=>Number(String(v).replace(/[^\d]/g,""));
+  const submit=()=>{
+    if(kind==="tx"){if(!num(f.amt))return setErr("Isi nominal lebih dari 0.");onSave({id:uid(),type:f.type,amt:num(f.amt),cat:f.cat,note:f.note.trim(),date:f.date||iso(new Date())})}
+    if(kind==="goal"){if(!f.name.trim())return setErr("Isi nama goal.");if(!num(f.target))return setErr("Isi target dana.");onSave({id:uid(),name:f.name.trim(),target:num(f.target),saved:num(f.saved),alloc:[],hist:num(f.saved)?[{d:iso(new Date()),amt:num(f.saved)}]:[]})}
+    if(kind==="inv"){const un=Number(String(f.units).replace(",","."));if(!un||un<=0)return setErr("Isi jumlah dengan benar.");
+      if(f.itype==="Reksadana"){if(!f.name.trim())return setErr("Isi nama reksadana.");if(!num(f.nav))return setErr("Isi NAV per unit.");onSave({id:uid(),name:f.name.trim(),type:"Reksadana",manual:true,units:un,nav:num(f.nav),cost:num(f.amt)||Math.round(un*num(f.nav))})}
+      else{const c=f.code.trim().toUpperCase();if(f.itype!=="Emas"&&!/^[A-Z0-9.-]{1,12}$/.test(c))return setErr("Isi kode aset yang valid.");
+        const sp=f.itype==="Saham"?{sym:c.replace(/\.JK$/,"")+".JK",kind:"idr"}:f.itype==="Crypto"?{sym:c.replace(/-USD$/,"")+"-USD",kind:"usd"}:{sym:"GC=F",kind:"gold"};
+        onSave({id:uid(),name:f.name.trim()||(f.itype==="Emas"?"Emas":c),type:f.itype,...sp,units:un,cost:num(f.amt)||null})}}
+    onClose();
+  };
+  const T={tx:"Tambah transaksi",goal:"Tambah goal",inv:"Tambah investasi"}[kind];
+  return <Modal title={T} onClose={onClose}>
+    {kind==="tx"&&<div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-4">{["expense","income"].map(t=><button key={t} onClick={()=>{u("type",t);u("cat",t==="income"?"Salary":"Food")}} className={"py-2.5 rounded-lg text-sm font-semibold transition "+(f.type===t?"bg-white shadow text-emerald-700":"text-slate-500")}>{t==="income"?"Pemasukan":"Pengeluaran"}</button>)}</div>}
+    {kind!=="tx"&&<Lbl t={kind==="goal"?"Nama goal":(f.itype==="Reksadana"?"Nama reksadana":"Nama (opsional)")}><input className={inp} value={f.name} onChange={e=>u("name",e.target.value)} placeholder={kind==="goal"?"Contoh: Motor baru":"Contoh: TLKM"}/></Lbl>}
+    {kind==="inv"&&<Lbl t="Jenis aset"><select className={inp} value={f.itype} onChange={e=>u("itype",e.target.value)}>{ITYPE.map(x=><option key={x}>{x}</option>)}</select></Lbl>}
+    {kind==="inv"&&(f.itype==="Saham"||f.itype==="Crypto")&&<Lbl t={f.itype==="Saham"?"Kode saham (contoh: BBCA)":"Kode crypto (contoh: BTC)"}><input className={inp} value={f.code} onChange={e=>u("code",e.target.value)}/></Lbl>}
+    {kind==="inv"&&<Lbl t={f.itype==="Emas"?"Berat (gram)":f.itype==="Saham"?"Jumlah lembar":"Jumlah unit"}><input inputMode="decimal" className={inp} value={f.units} onChange={e=>u("units",e.target.value)}/></Lbl>}
+    {kind==="inv"&&f.itype==="Reksadana"&&<Lbl t="NAV per unit (Rp, isi manual)"><input inputMode="numeric" className={inp} value={f.nav} onChange={e=>u("nav",e.target.value)}/></Lbl>}
+    {kind==="goal"&&<Lbl t="Target dana (Rp)"><input inputMode="numeric" className={inp} value={f.target} onChange={e=>u("target",e.target.value)} placeholder="10000000"/></Lbl>}
+    {kind==="goal"&&<Lbl t="Dana awal (opsional)"><input inputMode="numeric" className={inp} value={f.saved} onChange={e=>u("saved",e.target.value)} placeholder="0"/></Lbl>}
+    {kind!=="goal"&&<Lbl t={kind==="inv"?"Modal total (Rp, opsional)":"Nominal (Rp)"}><input inputMode="numeric" className={inp} value={f.amt} onChange={e=>u("amt",e.target.value)} placeholder="50000"/></Lbl>}
+    {kind==="tx"&&<><Lbl t="Kategori"><select className={inp} value={f.cat} onChange={e=>u("cat",e.target.value)}>{(f.type==="income"?INC:EXP).map(x=><option key={x}>{x}</option>)}</select></Lbl>
+      <Lbl t="Catatan"><input className={inp} value={f.note} onChange={e=>u("note",e.target.value)} placeholder="Opsional"/></Lbl>
+      <Lbl t="Tanggal"><input type="date" className={inp} value={f.date} onChange={e=>u("date",e.target.value)}/></Lbl></>}
+    {err&&<p className="text-sm text-red-600 mb-3" role="alert">{err}</p>}
+    <Btn className="w-full mt-1" onClick={submit}>Simpan</Btn>
+  </Modal>;
+}
+
+function GoalModal({g,onClose,onAdd,onDel}){
+  const [a,setA]=useState("");const pc=Math.min(100,g.saved/g.target*100);
+  const add=()=>{const n=Number(a.replace(/[^\d]/g,""));if(!n)return;onAdd(g.id,n);setA("")};
+  return <Modal title={g.name} onClose={onClose} wide>
+    <div className="rounded-2xl bg-emerald-50 p-4 mb-5">
+      <div className="flex items-end justify-between mb-2"><p className="text-2xl font-extrabold text-emerald-800">{pc.toFixed(0)}%</p><p className="text-xs text-emerald-700">{rp(g.saved)} dari {rp(g.target)}</p></div>
+      <div className="h-2.5 rounded-full bg-emerald-100 overflow-hidden"><div className="bar h-full rounded-full bg-emerald-600" style={{width:pc+"%"}}/></div>
+      <p className="text-xs text-emerald-700 mt-2">{g.saved>=g.target?"Target tercapai.":"Kurang "+rp(g.target-g.saved)}</p>
+    </div>
+    <p className="text-sm font-bold mb-2">Alokasi dana</p>
+    {g.alloc.length?<div className="mb-5 space-y-2">{g.alloc.map((x,i)=><div key={i} className="flex justify-between text-sm bg-slate-50 rounded-xl px-4 py-3"><span className="font-medium">{x.p}</span><span className="text-slate-600">{rp(x.amt)}</span></div>)}</div>:<p className="text-sm text-slate-400 mb-5">Belum ada alokasi produk. Dana disimpan sebagai tabungan biasa.</p>}
+    <p className="text-sm font-bold mb-2">Tambah tabungan</p>
+    <div className="flex gap-2 mb-5"><input inputMode="numeric" className={inp} placeholder="Nominal (Rp)" value={a} onChange={e=>setA(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/><Btn onClick={add}>Tambah</Btn></div>
+    <p className="text-sm font-bold mb-1">Histori tabungan</p>
+    {g.hist.length?<div className="divide-y divide-slate-100">{g.hist.map((h,i)=><div key={i} className="flex justify-between py-2.5 text-sm"><span className="text-slate-500">{fd(h.d)}</span><span className="font-semibold text-emerald-600">+{rp(h.amt)}</span></div>)}</div>:<Empty t="Belum ada setoran."/>}
+    <button onClick={()=>{if(confirm("Hapus goal ini?")){onDel(g.id);onClose()}}} className="mt-4 flex items-center gap-2 text-sm text-red-500 hover:text-red-700"><I n="trash" s={16}/>Hapus goal</button>
+  </Modal>;
+}
+
+function Home({d,setTab,open,fresh,reset,clear}){
+  const bal=d.tx.reduce((s,t)=>s+(t.type==="income"?t.amt:-t.amt),0);
+  const m=iso(new Date()).slice(0,7),mt=d.tx.filter(t=>t.date.startsWith(m));
+  const inc=mt.filter(t=>t.type==="income").reduce((s,t)=>s+t.amt,0),exp=mt.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amt,0);
+  const rec=[...d.tx].sort((a,b)=>b.date.localeCompare(a.date)||0).slice(0,6);
+  const qa=[["+ Transaksi","plus",()=>open("tx")],["+ Goal","target",()=>open("goal")],["+ Invest","trend",()=>open("inv")]];
+  return <div className="pg space-y-5">
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 text-white p-6 sm:p-8 shadow-xl shadow-emerald-600/20">
+      <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10"/><div className="absolute right-16 -bottom-16 w-44 h-44 rounded-full bg-white/10"/>
+      <div className="relative"><p className="text-sm text-emerald-100 flex items-center gap-2"><I n="wallet" s={16}/>Total saldo</p>
+      <p className="text-3xl sm:text-4xl font-extrabold mt-2 tracking-tight">{rp(bal)}</p>
+      <div className="flex gap-3 mt-6">
+        <div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-xs text-emerald-100 flex items-center gap-1"><I n="down" s={14}/>Masuk bulan ini</p><p className="font-bold mt-1 text-sm sm:text-base">{rp(inc)}</p></div>
+        <div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-xs text-emerald-100 flex items-center gap-1"><I n="up" s={14}/>Keluar bulan ini</p><p className="font-bold mt-1 text-sm sm:text-base">{rp(exp)}</p></div>
+      </div></div>
+    </div>
+    <div className="grid grid-cols-3 gap-3">{qa.map(([l,ic,fn])=><button key={l} onClick={fn} className="bg-white border border-slate-100 shadow-sm rounded-2xl py-4 flex flex-col items-center gap-2 hover:border-emerald-300 hover:bg-emerald-50 active:scale-95 transition"><span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center"><I n={ic}/></span><span className="text-xs sm:text-sm font-semibold">{l}</span></button>)}</div>
+    <Card className="p-5"><div className="flex items-center justify-between mb-1"><h2 className="font-bold">Ringkasan bulan ini</h2><span className="text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-full px-3 py-1">{inc>0?Math.max(0,Math.round((inc-exp)/inc*100)):0}% ditabung</span></div>
+      <p className="text-sm text-slate-500">{inc-exp>=0?"Surplus ":"Defisit "}<b className={inc-exp>=0?"text-emerald-600":"text-red-500"}>{rp(Math.abs(inc-exp))}</b> dari {mt.length} transaksi.</p></Card>
+    <Card className="p-5"><div className="flex items-center justify-between mb-1"><h2 className="font-bold">Transaksi terakhir</h2><button onClick={()=>setTab("analytics")} className="text-sm font-semibold text-emerald-600">Lihat analitik</button></div>
+      {rec.length?<div className="divide-y divide-slate-100">{rec.map(t=><TxRow key={t.id} t={t} fresh={t.id===fresh}/>)}</div>:<Empty t="Belum ada transaksi. Tekan + Transaksi untuk mulai."/>}</Card>
+    <div className="flex flex-wrap gap-2 justify-center pt-1">
+      <button onClick={reset} className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-emerald-700 bg-white border border-slate-200 rounded-full px-4 py-2"><I n="reset" s={14}/>Load sample data</button>
+      <button onClick={clear} className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-red-600 bg-white border border-slate-200 rounded-full px-4 py-2"><I n="trash" s={14}/>Kosongkan data</button></div>
+  </div>;
+}
+
+function Analytics({d}){
+  const [r,setR]=useState("month");
+  const {b,items,total,ti,te}=useMemo(()=>{
+    const N={week:7,month:4,year:12}[r],b=Array.from({length:N},(_,i)=>({l:"",inc:0,exp:0}));
+    const now=new Date(),mn=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"],dn=["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+    b.forEach((x,i)=>{if(r==="week"){const t=new Date();t.setDate(t.getDate()-(6-i));x.l=dn[t.getDay()]}else if(r==="month")x.l=["M-3","M-2","M-1","Kini"][i];else{const t=new Date(now.getFullYear(),now.getMonth()-(11-i),1);x.l=mn[t.getMonth()]}});
+    const cat={};
+    d.tx.forEach(t=>{let i;const df=diffD(t.date);if(df<0)return;
+      if(r==="week")i=6-df;else if(r==="month")i=3-Math.floor(df/7);else{const dt=new Date(t.date+"T00:00:00");i=11-((now.getFullYear()-dt.getFullYear())*12+now.getMonth()-dt.getMonth())}
+      if(i<0||i>=N)return;
+      if(t.type==="income")b[i].inc+=t.amt;else{b[i].exp+=t.amt;cat[t.cat]=(cat[t.cat]||0)+t.amt}});
+    const items=Object.entries(cat).sort((a,c)=>c[1]-a[1]);
+    return{b,items,total:items.reduce((s,x)=>s+x[1],0),ti:b.reduce((s,x)=>s+x.inc,0),te:b.reduce((s,x)=>s+x.exp,0)};
+  },[d.tx,r]);
+  return <div className="pg space-y-5">
+    <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-2xl">{[["week","Mingguan"],["month","Bulanan"],["year","Tahunan"]].map(([k,l])=><button key={k} onClick={()=>setR(k)} className={"py-2.5 rounded-xl text-sm font-semibold transition "+(r===k?"bg-white shadow text-emerald-700":"text-slate-500")}>{l}</button>)}</div>
+    <Card className="p-5"><h2 className="font-bold mb-1">Pemasukan vs pengeluaran</h2>
+      <div className="flex gap-4 text-xs text-slate-500 mb-3"><span className="flex items-center gap-1.5"><i className="w-2.5 h-2.5 rounded bg-emerald-600"/>Masuk {sh(ti)}</span><span className="flex items-center gap-1.5"><i className="w-2.5 h-2.5 rounded bg-emerald-200"/>Keluar {sh(te)}</span></div>
+      <Bars b={b}/></Card>
+    <Card className="p-5"><h2 className="font-bold mb-4 flex items-center gap-2"><I n="pie" s={18} c="text-emerald-600"/>Rincian pengeluaran</h2>
+      {total?<div className="flex flex-col sm:flex-row items-center gap-6"><div className="relative"><Donut items={items} total={total}/><div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-xs text-slate-400">Total</span><span className="font-extrabold">{sh(total)}</span></div></div>
+        <div className="w-full space-y-2.5">{items.map(([c,v])=><div key={c} className="flex items-center gap-3 text-sm"><i className="w-3 h-3 rounded-full shrink-0" style={{background:CAT[c]}}/><span className="flex-1 font-medium">{c}</span><span className="text-slate-400">{Math.round(v/total*100)}%</span><span className="font-semibold w-20 text-right">{sh(v)}</span></div>)}</div></div>:<Empty t="Belum ada pengeluaran di periode ini."/>}</Card>
+  </div>;
+}
+
+function Goals({d,open,pick}){
+  return <div className="pg space-y-4">
+    <div className="flex items-center justify-between"><p className="text-sm text-slate-500">{d.goals.length} goal aktif</p><Btn onClick={()=>open("goal")} className="!py-2.5 flex items-center gap-1.5"><I n="plus" s={16}/>Goal baru</Btn></div>
+    {d.goals.length?<div className="grid sm:grid-cols-2 gap-4">{d.goals.map(g=>{const pc=Math.min(100,g.saved/g.target*100);
+      return <button key={g.id} onClick={()=>pick(g.id)} className="text-left bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:border-emerald-300 hover:shadow-md active:scale-[.99] transition">
+        <div className="flex items-center gap-3 mb-4"><span className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">{pc>=100?<I n="check"/>:<I n="target"/>}</span>
+          <div className="flex-1 min-w-0"><p className="font-bold truncate">{g.name}</p><p className="text-xs text-slate-400">Target {rp(g.target)}</p></div><span className="font-extrabold text-emerald-700">{pc.toFixed(0)}%</span></div>
+        <div className="h-2 rounded-full bg-slate-100 overflow-hidden"><div className="bar h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700" style={{width:pc+"%"}}/></div>
+        <p className="text-xs text-slate-500 mt-2">Terkumpul {rp(g.saved)}</p></button>})}</div>:<Card><Empty t="Belum ada goal. Buat goal pertama kamu."/></Card>}
+  </div>;
+}
+
+function Invest({d,px,refresh,pxt,pxe,open,del}){
+  const [ai,setAi]=useState(null),[busy,setBusy]=useState(false),[err,setErr]=useState("");
+  const rows=d.inv.map(a=>({a,v:val(a,px),s:ser(a,px),p:px[a.sym]}));
+  const tot=rows.reduce((s,r)=>s+r.v,0),cost=rows.reduce((s,r)=>s+(r.a.cost||r.v),0),pl=tot-cost;
+  const line=useMemo(()=>{const L=Math.min(20,...rows.filter(r=>r.s).map(r=>r.s.length));if(!isFinite(L)||L<2)return null;
+    return Array.from({length:L},(_,i)=>rows.reduce((s,r)=>s+(r.s?r.a.units*r.s[r.s.length-L+i]:r.v),0))},[d.inv,px]);
+  const analyze=async()=>{
+    const assets=rows.filter(r=>r.s).map(r=>({name:r.a.name,type:r.a.type,series:r.s.map(v=>+(v/r.s[0]).toFixed(4))}));
+    if(!assets.length)return setErr("Belum ada data harga untuk dianalisis.");
+    setBusy(true);setErr("");
+    try{const r=await fetch("/api/ai",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({assets})});
+      const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||("HTTP "+r.status+" (fitur ini hanya jalan setelah deploy ke Netlify)"));
+      setAi({...j,time:new Date().toLocaleTimeString("id-ID")})}catch(e){setErr("Gagal: "+e.message)}
+    setBusy(false)};
+  const rec=s=>{const x=st(s);return x>=0?(x>.03?"Momentum kuat. Tahan posisi, tambah bertahap (DCA) bila perlu.":"Tren naik tipis. Pertahankan posisi dan pantau."):(x<-.03?"Tekanan turun cukup dalam. Tunda tambah posisi sampai stabil.":"Tren melemah ringan. Tahan dan pantau.")};
+  const unit=a=>a.units+(a.type==="Emas"?" g":a.type==="Saham"?" lbr":" unit");
+  return <div className="pg space-y-5">
+    <Card className="p-5"><div className="flex items-start justify-between"><div><p className="text-sm text-slate-500">Nilai portofolio</p><p className="text-3xl font-extrabold tracking-tight mt-1">{rp(tot)}</p></div>
+      <button onClick={refresh} className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-full px-3 py-2"><I n="reset" s={14}/>Perbarui</button></div>
+      <p className={"text-sm font-semibold mt-1 flex items-center gap-1 "+(pl>=0?"text-emerald-600":"text-red-500")}><I n={pl>=0?"up":"down"} s={16}/>{rp(pl)} ({cost?(pl/cost*100).toFixed(2):"0.00"}%)</p>
+      {line?<div className="mt-3"><Line data={line}/></div>:<Empty t="Grafik muncul setelah data harga dimuat."/>}
+      <p className="text-[11px] text-slate-400 mt-2">{pxe?pxe:(pxt?"Harga dari Yahoo Finance, diperbarui "+new Date(pxt).toLocaleTimeString("id-ID")+". Data saham bisa tertunda.":"Memuat harga...")}</p></Card>
+    <Card className="p-5"><div className="flex items-center gap-2 mb-1"><span className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center"><I n="zap" s={18}/></span><div><h2 className="font-bold leading-tight">AI market status</h2><p className="text-xs text-slate-400">Tren dari harga asli. Bukan saran investasi.</p></div></div>
+      <div className="my-3 rounded-xl bg-emerald-50 p-3">
+        <Btn onClick={analyze} disabled={busy||!d.inv.length} className="w-full !py-2 disabled:opacity-60">{busy?"Menganalisis...":"Analisis dengan Gemini"}</Btn>
+        {err&&<p className="text-xs text-red-600 mt-2" role="alert">{err}</p>}
+        {ai&&ai.overall&&<p className="text-xs text-emerald-800 mt-2"><b>Ringkasan Gemini ({ai.time}):</b> {ai.overall}</p>}
+      </div>
+      {d.inv.length?<div className="divide-y divide-slate-100">{rows.map(({a,s,p})=>{const x=st(s),bull=x>=0;return <div key={a.id} className="py-3.5">
+        <div className="flex items-center gap-3"><div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{a.name}</p>
+          {a.manual?<span className="inline-flex text-xs font-semibold rounded-full px-2.5 py-1 mt-1 bg-slate-100 text-slate-500">Manual, tanpa data tren</span>
+          :s?<span className={"inline-flex items-center gap-1.5 text-xs font-bold rounded-full px-2.5 py-1 mt-1 "+(bull?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-600")}><i className={"w-1.5 h-1.5 rounded-full "+(bull?"bg-emerald-500":"bg-red-500")}/>{bull?"Bullish":"Bearish"} {(x*100).toFixed(1)}% / 5 hari</span>
+          :<span className="inline-flex text-xs font-semibold rounded-full px-2.5 py-1 mt-1 bg-amber-50 text-amber-700">{p&&p.error?"Gagal: "+p.error:"Memuat harga..."}</span>}</div>
+          {s&&<Spark data={s} color={bull?"#059669":"#ef4444"}/>}</div>
+        {s&&<p className="text-xs text-slate-500 mt-2">{rec(s)}</p>}
+        {(()=>{const it=ai&&ai.items&&ai.items.find(i=>i.name===a.name);return it?<p className="text-xs text-emerald-800 bg-emerald-50 rounded-lg px-3 py-2 mt-2"><b>Gemini: {it.status}.</b> {it.summary} {it.action}</p>:null})()}</div>})}</div>:<Empty t="Tambahkan aset untuk melihat status pasar."/>}</Card>
+    <div className="flex items-center justify-between"><h2 className="font-bold">Aset investasi</h2><Btn onClick={()=>open("inv")} className="!py-2.5 flex items-center gap-1.5"><I n="plus" s={16}/>Aset</Btn></div>
+    {d.inv.length?<div className="grid sm:grid-cols-2 gap-3">{rows.map(({a,v})=>{const c=a.cost||v,p=v-c;return <Card key={a.id} className="p-4 flex items-center gap-3">
+      <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><I n={a.type==="Emas"?"wallet":a.type==="Crypto"?"zap":a.type==="Saham"?"trend":"pie"}/></div>
+      <div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{a.name}</p><p className="text-xs text-slate-400">{a.type} - {unit(a)}</p></div>
+      <div className="text-right"><p className="font-bold text-sm">{rp(v)}</p><p className={"text-xs font-semibold "+(p>=0?"text-emerald-600":"text-red-500")}>{p>=0?"+":""}{sh(p)}</p></div>
+      <button onClick={()=>confirm("Hapus aset ini?")&&del(a.id)} aria-label="Hapus aset" className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></Card>})}</div>:<Card><Empty t="Belum ada aset investasi."/></Card>}
+  </div>;
+}
+
+function App(){
+  const [d,setD]=useState(load),[tab,setTab]=useState("home"),[modal,setModal]=useState(null),[gid,setGid]=useState(null),[fresh,setFresh]=useState(null);
+  useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}},[d]);
+  const [px,setPx]=useState(()=>{try{return JSON.parse(localStorage.getItem("xav_px"))||{}}catch(e){return {}}});
+  const [pxt,setPxt]=useState(0),[pxe,setPxe]=useState("");
+  const refresh=async()=>{
+    const items=[...new Set(d.inv.filter(a=>!a.manual).map(a=>a.sym+":"+a.kind))];
+    if(!items.length)return;
+    try{const r=await fetch("/api/prices?items="+encodeURIComponent(items.join(",")));if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();
+      setPx(s=>{const n={...s};for(const it in j.data){const sy=it.split(":")[0],x=j.data[it];if(!x.error||!(n[sy]&&n[sy].price))n[sy]=x}return n});
+      setPxt(Date.now());setPxe("")}
+    catch(e){setPxe("Harga belum bisa dimuat ("+e.message+"). Fitur harga asli butuh deploy ke Netlify.")}
+  };
+  useEffect(()=>{refresh();const t=setInterval(refresh,60000);return()=>clearInterval(t)},[d.inv.length]);
+  useEffect(()=>{try{localStorage.setItem("xav_px",JSON.stringify(px))}catch(e){}},[px]);
+  useEffect(()=>{if(d.inv.some(a=>a.cost==null&&px[a.sym]&&px[a.sym].price))setD(s=>({...s,inv:s.inv.map(a=>a.cost==null&&px[a.sym]&&px[a.sym].price?{...a,cost:Math.round(a.units*px[a.sym].price)}:a)}))},[px,d.inv]);
+  const tabs=[["home","Home","home"],["analytics","Analytics","chart"],["goals","Goals","target"],["invest","Investments","trend"]];
+  const save=x=>{
+    if(modal==="tx"){setD(s=>({...s,tx:[x,...s.tx]}));setFresh(x.id);setTab("home")}
+    if(modal==="goal"){setD(s=>({...s,goals:[x,...s.goals]}));setTab("goals")}
+    if(modal==="inv"){setD(s=>({...s,inv:[...s.inv,x]}));setTab("invest")}
+  };
+  const addSave=(id,n)=>setD(s=>({...s,goals:s.goals.map(g=>g.id===id?{...g,saved:g.saved+n,hist:[{d:iso(new Date()),amt:n},...g.hist]}:g)}));
+  const g=d.goals.find(x=>x.id===gid);
+  const title={home:"Beranda",analytics:"Analitik",goals:"Goals",invest:"Investasi"}[tab];
+  const nav=(k)=>{setTab(k);scrollTo({top:0})};
+  return <div className="min-h-screen md:pl-64">
+    <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-100 flex-col p-5">
+      <div className="flex items-center gap-3 mb-8 px-2"><span className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-800 text-white flex items-center justify-center font-extrabold text-lg">X</span><span className="text-xl font-extrabold tracking-tight">Xav</span></div>
+      <nav className="space-y-1.5">{tabs.map(([k,l,ic])=><button key={k} onClick={()=>nav(k)} className={"w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition "+(tab===k?"bg-emerald-50 text-emerald-700":"text-slate-500 hover:bg-slate-50")}><I n={ic} s={20}/>{l}</button>)}</nav>
+      <Btn className="mt-auto flex items-center justify-center gap-2" onClick={()=>setModal("tx")}><I n="plus" s={18}/>Transaksi</Btn>
+    </aside>
+    <header className="sticky top-0 z-30 bg-white/85 backdrop-blur border-b border-slate-100" style={{paddingTop:"env(safe-area-inset-top)"}}>
+      <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-2.5"><span className="md:hidden w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-800 text-white flex items-center justify-center font-extrabold">X</span><h1 className="text-lg font-extrabold">{title}</h1></div>
+        <button onClick={()=>setModal("tx")} className="md:hidden w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center active:scale-95" aria-label="Tambah transaksi"><I n="plus"/></button>
+      </div></header>
+    <main className="max-w-3xl mx-auto px-4 py-5 pb-28 md:pb-10" key={tab}>
+      {tab==="home"&&<Home d={d} setTab={nav} open={setModal} fresh={fresh} reset={()=>confirm("Ganti semua data dengan data contoh?")&&setD(sample())} clear={()=>confirm("Hapus semua data?")&&setD({tx:[],goals:[],inv:[]})}/>}
+      {tab==="analytics"&&<Analytics d={d}/>}
+      {tab==="goals"&&<Goals d={d} open={setModal} pick={setGid}/>}
+      {tab==="invest"&&<Invest d={d} px={px} refresh={refresh} pxt={pxt} pxe={pxe} open={setModal} del={id=>setD(s=>({...s,inv:s.inv.filter(a=>a.id!==id)}))}/>}
+    </main>
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/90 backdrop-blur border-t border-slate-100 grid grid-cols-4" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>
+      {tabs.map(([k,l,ic])=><button key={k} onClick={()=>nav(k)} className={"py-2.5 flex flex-col items-center gap-1 text-[11px] font-semibold transition "+(tab===k?"text-emerald-700":"text-slate-400")}>
+        <span className={"px-5 py-1 rounded-full transition "+(tab===k?"bg-emerald-50":"")}><I n={ic} s={20}/></span>{l}</button>)}</nav>
+    {modal&&<AddModal kind={modal} onClose={()=>setModal(null)} onSave={save}/>}
+    {g&&<GoalModal g={g} onClose={()=>setGid(null)} onAdd={addSave} onDel={id=>setD(s=>({...s,goals:s.goals.filter(x=>x.id!==id)}))}/>}
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
