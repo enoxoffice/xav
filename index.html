@@ -228,9 +228,10 @@ const inp="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-
 const Lbl=({t,children})=><label className="block mb-3 min-w-0"><span className="block text-xs font-semibold text-slate-500 mb-1.5">{t}</span>{children}</label>;
 const Btn=({className="",...p})=><button {...p} className={"rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[.98] text-white font-semibold px-5 py-3 text-sm transition "+className}/>;
 
-function AddModal({kind,goals,onClose,onSave}){
+function AddModal({kind,goals,onClose,onSave:save0}){
   const [f,setF]=useState({type:"expense",amt:"",cat:"Makanan",note:"",date:iso(new Date()),name:"",target:"",saved:"",gcat:"lainnya",itype:"Saham",code:"",units:"",nav:"",goal:""});
   const [err,setErr]=useState(""),[manual,setManual]=useState(false);
+  const onSave=o=>save0(kind==="inv"?{...o,fromCash:!!f.fc}:o);
   const u=(k,v)=>setF(s=>({...s,[k]:v}));
   const setName=v=>setF(s=>({...s,name:v,gcat:manual?s.gcat:guess(v)}));
   const submit=()=>{
@@ -260,6 +261,7 @@ function AddModal({kind,goals,onClose,onSave}){
     {kind==="goal"&&<Lbl t="Target dana"><MoneyIn v={f.target} set={v=>u("target",v)} ph="10.000.000"/></Lbl>}
     {kind==="goal"&&<Lbl t="Dana awal (opsional)"><MoneyIn v={f.saved} set={v=>u("saved",v)} ph="0"/></Lbl>}
     {kind!=="goal"&&<Lbl t={kind==="inv"?(f.itype==="Reksadana"?"Total modal (nominal top up)":"Modal total (opsional)"):"Nominal"}><MoneyIn v={f.amt} set={v=>u("amt",v)} ph="50.000"/></Lbl>}
+    {kind==="inv"&&num(f.amt)>0&&<label className="flex items-center gap-2 mb-3 text-xs font-semibold text-slate-600 cursor-pointer"><input type="checkbox" className="w-4 h-4 accent-emerald-600" checked={!!f.fc} onChange={e=>u("fc",e.target.checked)}/>Dibeli dari saldo kas (saldo dikurangi)</label>}
     {kind==="inv"&&<Lbl t="Untuk tujuan (opsional)"><select className={inp} value={f.goal} onChange={e=>u("goal",e.target.value)}><option value="">Tanpa tujuan</option>{goals.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select>
       <span className="block text-[11px] text-slate-400 mt-1">{goals.length?(f.goal?"Nilai aset ini ikut dihitung ke progres tujuan.":"Pilih tujuan agar jelas investasi ini untuk apa."):"Belum ada tujuan. Buat dulu di tab Manager."}</span></Lbl>}
     {kind==="tx"&&<><Lbl t="Kategori"><select className={inp} value={f.cat} onChange={e=>u("cat",e.target.value)}>{(f.type==="income"?INC:EXP).map(x=><option key={x}>{x}</option>)}</select></Lbl>
@@ -295,10 +297,10 @@ function GoalModal({g,inv,px,busy,onClose,onAdd,onDel,onGen}){
   </Modal>;
 }
 
-function Home({d,setTab,open,fresh,reset,clear}){
+function Home({d,px,setTab,open,fresh,reset,clear}){
   const bal=d.tx.reduce((s,t)=>s+(t.type==="income"?t.amt:-t.amt),0);
   const m=iso(new Date()).slice(0,7),mt=d.tx.filter(t=>t.date.startsWith(m));
-  const inc=mt.filter(t=>t.type==="income").reduce((s,t)=>s+t.amt,0),exp=mt.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amt,0);
+  const inc=mt.filter(t=>t.type==="income").reduce((s,t)=>s+t.amt,0),exp=mt.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amt,0),trf=mt.filter(t=>t.type==="transfer").reduce((s,t)=>s+t.amt,0),pl=d.inv.reduce((s,a)=>{const v=val(a,px);return s+v-(a.cost||v)},0);
   const rec=[...d.tx].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
   const qa=[["Transaksi","plus",()=>open("tx")],["Manager","wallet",()=>setTab("manager")],["Investasi","trend",()=>open("inv")]];
   return <div className="st space-y-5">
@@ -312,8 +314,9 @@ function Home({d,setTab,open,fresh,reset,clear}){
       </div></div>
     </div>
     <div className="grid grid-cols-3 gap-3">{qa.map(([l,ic,fn])=><button key={l} onClick={fn} className="lift bg-white border border-slate-100 shadow-sm rounded-2xl py-4 flex flex-col items-center gap-2 hover:border-emerald-300"><span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center"><I n={ic}/></span><span className="text-xs sm:text-sm font-semibold">{l}</span></button>)}</div>
-    <Card className="p-5"><div className="flex items-center justify-between mb-1"><h2 className="font-bold">Ringkasan bulan ini</h2><span className="text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-full px-3 py-1">{inc>0?Math.max(0,Math.round((inc-exp)/inc*100)):0}% ditabung</span></div>
-      <p className="text-sm text-slate-500">{inc-exp>=0?"Surplus ":"Defisit "}<b className={inc-exp>=0?"text-emerald-600":"text-red-500"}>{rp(Math.abs(inc-exp))}</b> dari {mt.length} transaksi.</p></Card>
+    <Card className="p-5"><div className="flex items-center justify-between mb-3"><h2 className="font-bold">Ringkasan bulan ini</h2><span className="text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-full px-3 py-1">{inc>0?Math.max(0,Math.round((inc-exp)/inc*100)):0}% ditabung</span></div>
+      <div className="grid grid-cols-2 gap-2.5">{[["Pemasukan",inc,"text-emerald-600"],["Pengeluaran",exp,"text-slate-800"],["Dipindah ke aset",trf,"text-slate-800"],["Untung/rugi investasi",pl,pl>=0?"text-emerald-600":"text-red-500"]].map(([l,v,c])=><div key={l} className="rounded-xl bg-slate-50 p-3"><p className="text-[11px] text-slate-500">{l}</p><p className={"font-bold text-sm mt-0.5 "+c}>{rp(v)}</p></div>)}</div>
+      <p className="text-xs text-slate-500 mt-3">{inc-exp>=0?"Surplus ":"Defisit "}<b className={inc-exp>=0?"text-emerald-600":"text-red-500"}>{rp(Math.abs(inc-exp))}</b> (pemasukan - pengeluaran). Perubahan kas bulan ini {rp(inc-exp-trf)}.</p></Card>
     <Card className="p-5"><div className="flex items-center justify-between mb-1"><h2 className="font-bold">Transaksi terakhir</h2><button onClick={()=>setTab("analytics")} className="text-sm font-semibold text-emerald-600">Lihat analitik</button></div>
       {rec.length?<div className="divide-y divide-slate-100">{rec.map(t=><TxRow key={t.id} t={t} fresh={t.id===fresh}/>)}</div>:<Empty t="Belum ada transaksi. Tekan tombol Transaksi untuk mulai."/>}</Card>
     <div className="flex flex-wrap gap-2 justify-center pt-1">
@@ -424,7 +427,7 @@ function AllocChart({v}){
 }
 function Manager({d,px,setD,toast}){
   const m=d.mm,up=p=>setD(s=>({...s,mm:{...s.mm,...p}})),addTx=o=>setD(s=>({...s,tx:[{id:uid(),date:iso(new Date()),...o},...s.tx]}));
-  const [bf,setBf]=useState({name:"",amt:"",tenor:"",left:"",due:"",paid:""}),[df,setDf]=useState({name:"",target:"",months:""}),[dep,setDep]=useState({});
+  const [bf,setBf]=useState({name:"",amt:"",tenor:"",left:"",due:"",paid:""}),[df,setDf]=useState({name:"",target:"",months:""}),[dep,setDep]=useState({}),[dst,setDst]=useState({});
   const mk=iso(new Date()).slice(0,7),pri=m.mode==="pri";
   const sal=useMemo(()=>{const g=d.tx.filter(t=>t.type==="income"&&t.cat==="Gaji");const cur=g.filter(t=>t.date.startsWith(mk)).reduce((s,t)=>s+t.amt,0);if(cur)return cur;const l=[...g].sort((a,b)=>b.date.localeCompare(a.date))[0];return l?l.amt:0},[d.tx]);
   const commute=Math.round(num(m.amt)*dec(m.freq)*4.33);
@@ -434,20 +437,25 @@ function Manager({d,px,setD,toast}){
   const [hc,hl]=!sal?["slate","Belum ada Gaji"]:debtPct>30?["red","Beban cicilan terlalu tinggi"]:needPct>50?["amber","Kebutuhan wajib besar"]:["emerald","Sehat"];
   const cash=d.tx.reduce((s,t)=>s+(t.type==="income"?t.amt:-t.amt),0);
   const dsum=x=>x.saved+d.inv.reduce((s,a)=>s+(a.goal===x.id?val(a,px):0),0);
-  const nw=cash+d.inv.reduce((s,a)=>s+val(a,px),0)+m.dreams.reduce((s,x)=>s+x.saved,0);
+  const invV=d.inv.reduce((s,a)=>s+val(a,px),0),savV=m.dreams.reduce((s,x)=>s+x.saved,0),nw=cash+invV+savV;
   const mo=x=>Math.max(0,Math.ceil((x.target-dsum(x))/x.months));
   const gTot=m.dreams.reduce((s,x)=>s+mo(x),0);
   const eta=n=>{const t=new Date();t.setMonth(t.getMonth()+n);return t.toLocaleDateString("id-ID",{month:"long",year:"numeric"})};
-  const addBill=()=>{const a=num(bf.amt),t=num(bf.tenor),p0=num(bf.paid),l=p0&&a?Math.max(0,t-Math.floor(p0/a)):(bf.left===""?t:Math.min(t,num(bf.left)));if(!bf.name.trim()||!a||!t)return;up({bills:[...m.bills,{id:uid(),name:bf.name.trim(),amt:a,tenor:t,left:l,paid:p0||(t-l)*a,due:Math.min(31,num(bf.due))||new Date().getDate(),last:p0?mk:""}]});setBf({name:"",amt:"",tenor:"",left:"",due:"",paid:""})};
+  const addBill=()=>{const a=num(bf.amt),t=num(bf.tenor),p0=num(bf.paid),l=p0&&a?Math.max(0,t-Math.floor(p0/a)):(bf.left===""?t:Math.min(t,num(bf.left)));if(!bf.name.trim()||!a||!t)return;if(l<1){toast("Cicilan itu sudah lunas, tidak perlu dicatat.");return}up({bills:[...m.bills,{id:uid(),name:bf.name.trim(),amt:a,tenor:t,left:l,paid:p0||(t-l)*a,due:Math.min(31,num(bf.due))||new Date().getDate(),last:p0?mk:""}]});setBf({name:"",amt:"",tenor:"",left:"",due:"",paid:""})};
   const paidOf=b=>b.paid!=null?b.paid:(b.tenor-b.left)*b.amt;
-  const payBill=b=>{const v=prompt("Nominal pembayaran (Rp). Boleh lebih dari cicilan bulanan.",String(b.amt));if(v===null)return;const n=num(v);if(!n)return;const pd=paidOf(b)+n,tot=b.amt*b.tenor;addTx({type:"expense",amt:n,cat:"Cicilan",note:"Cicilan: "+b.name});up({bills:m.bills.map(x=>x.id===b.id?{...x,paid:pd,left:Math.max(0,Math.ceil((tot-pd)/b.amt)),last:mk}:x)});toast("Dibayar "+rp(n)+" untuk "+b.name)};
+  const payBill=b=>{const v=prompt("Nominal pembayaran (Rp). Boleh lebih dari cicilan bulanan.",String(b.amt));if(v===null)return;const n=num(v);if(!n)return;const pd=paidOf(b)+n,tot=b.amt*b.tenor;addTx({type:"expense",amt:n,cat:"Cicilan",note:"Cicilan: "+b.name});up({bills:m.bills.map(x=>x.id===b.id?{...x,paid:pd,left:Math.max(0,Math.ceil((tot-pd)/b.amt)),last:mk}:x).filter(x=>x.left>0)});toast(pd>=tot?"Cicilan lunas: "+b.name:"Dibayar "+rp(n)+" untuk "+b.name)};
   const addDream=()=>{const t=num(df.target),n=num(df.months);if(!df.name.trim()||!t||!n)return;up({dreams:[...m.dreams,{id:uid(),name:df.name.trim(),target:t,saved:0,months:n}]});setDf({name:"",target:"",months:""})};
-  const deposit=x=>{const n=num(dep[x.id]);if(!n)return;addTx({type:"transfer",amt:n,cat:"Tabungan",note:"Setor: "+x.name});up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:y.saved+n}:y)});setDep({...dep,[x.id]:""});toast("Disetor ke "+x.name+": "+rp(n))};
+  const tgt=x=>d.inv.filter(a=>a.goal===x.id&&a.manual&&!(a.units>0&&a.nav>0));
+  const deposit=x=>{const n=num(dep[x.id]);if(!n)return;const t=dst[x.id];
+    if(t){const a=d.inv.find(y=>y.id===t);if(!a)return;setD(s=>({...s,tx:[{id:uid(),type:"transfer",amt:n,cat:"Investasi",note:"Setor ke "+a.name+" ("+x.name+")",date:iso(new Date())},...s.tx],inv:s.inv.map(y=>y.id===t?{...y,cost:(y.cost||0)+n,cur:y.cur?y.cur+n:y.cur}:y)}))}
+    else{addTx({type:"transfer",amt:n,cat:"Tabungan",note:"Setor: "+x.name});up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:y.saved+n}:y)})}
+    setDep({...dep,[x.id]:""});toast("Disetor "+rp(n)+" untuk "+x.name)};
   const hasEf=m.dreams.some(x=>/darurat/i.test(x.name));
   return <div className="st space-y-5">
     <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white p-6 shadow-xl shadow-emerald-600/20">
       <p className="text-sm text-emerald-100">Net worth (kas + aset)</p><p className="text-3xl font-extrabold mt-1"><Count v={nw}/></p>
       <div className="flex gap-3 mt-4 text-xs"><div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-emerald-100">Saldo kas</p><p className="font-bold text-sm mt-1">{rp(cash)}</p></div><div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-emerald-100">Gaji acuan</p><p className="font-bold text-sm mt-1">{rp(sal)}</p></div></div>
+      <p className="text-xs text-emerald-100 mt-3">Kas {rp(cash)} + investasi {rp(invV)} + tabungan target {rp(savV)}</p>
     </div>
     <Card className="p-5"><div className="flex items-center justify-between mb-3 gap-2"><h2 className="font-bold">Rekomendasi alokasi</h2><span className={"text-xs font-bold rounded-full px-3 py-1 transition "+HC[hc]}>{hl}</span></div>
       {sal?<div className="flex flex-col sm:flex-row items-center gap-5"><div className="w-40 h-40 shrink-0"><AllocChart v={[needs,ef,inv]}/></div>
@@ -477,10 +485,11 @@ function Manager({d,px,setD,toast}){
         <Lbl t="Target nominal"><MoneyIn v={df.target} set={v=>setDf({...df,target:v})} ph="30.000.000"/></Lbl><Lbl t="Tenggat (bulan lagi)"><MoneyIn rpx={false} v={df.months} set={v=>setDf({...df,months:v})} ph="12"/></Lbl></div>
       <Btn className="w-full mb-4 flex items-center justify-center gap-1.5" onClick={addDream}><I n="plus" s={16}/>Tambah target</Btn>
       {m.dreams.length?<>{m.dreams.map(x=>{const sv=dsum(x),pc=Math.min(100,sv/x.target*100);return <div key={x.id} className="pgb rounded-xl bg-slate-50 p-3 mb-2">
-        <div className="flex items-center justify-between gap-2"><p className="font-semibold text-sm truncate">{x.name}</p><button aria-label="Hapus target" onClick={()=>confirm("Hapus target ini?")&&up({dreams:m.dreams.filter(y=>y.id!==x.id)})} className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></div>
+        <div className="flex items-center justify-between gap-2"><p className="font-semibold text-sm truncate">{x.name}</p><div className="flex items-center shrink-0">{x.saved>0&&<button onClick={()=>{const v=prompt("Koreksi tabungan kas target ini (Rp). Tidak mengubah saldo kas.",String(x.saved));if(v===null)return;up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:num(v)}:y)});toast("Tabungan dikoreksi")}} className="text-[11px] font-bold text-slate-500 mr-1">Koreksi</button>}<button aria-label="Hapus target" onClick={()=>confirm("Hapus target ini?")&&up({dreams:m.dreams.filter(y=>y.id!==x.id)})} className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></div></div>
         <p className="text-xs text-slate-400">Target {rp(x.target)} dalam {x.months} bulan</p>
         <div className="h-2 rounded-full bg-slate-200 overflow-hidden mt-2"><div className="bar h-full rounded-full bg-emerald-500" style={{width:pc+"%"}}/></div>
         <div className="flex justify-between text-xs mt-1.5"><span className="text-slate-500">{pc.toFixed(0)}% ({rp(sv)})</span><span className="font-bold text-emerald-700">Setoran {rp(mo(x))}/bln</span></div>
+        {tgt(x).length>0&&<select className={inp+" mt-2"} value={dst[x.id]||""} onChange={e=>setDst({...dst,[x.id]:e.target.value})}><option value="">Setor ke: Tabungan kas</option>{tgt(x).map(a=><option key={a.id} value={a.id}>Setor ke: {a.name}</option>)}</select>}
         <div className="flex gap-2 mt-2"><div className="flex-1 min-w-0"><MoneyIn v={dep[x.id]||""} set={v=>setDep({...dep,[x.id]:v})} ph="Nominal setor"/></div><Btn className="!py-2" onClick={()=>deposit(x)}>Setor</Btn></div></div>})}
         {sal>0&&<p className={"text-xs font-semibold mt-2 "+(gTot>inv?"text-red-600":"text-emerald-700")}>Total setoran {rp(gTot)}/bln dari jatah investasi & goals {rp(inv)}{gTot>inv?" - melebihi jatah, perpanjang tenggat.":"."}</p>}</>:<Empty t="Belum ada target."/>}
     </Card>
@@ -497,7 +506,7 @@ function App(){
   useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}},[d]);
   useEffect(()=>{const t=new Date(),mk=iso(t).slice(0,7),day=t.getDate(),dt=iso(t);
     setD(s=>{const m=s.mm;let tx=s.tx,ch=false,trLast=m.trLast;
-      const bills=m.bills.map(b=>{if(b.left>0&&b.last!==mk&&day>=(b.due||1)){ch=true;tx=[{id:uid(),type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name,date:dt},...tx];return{...b,paid:(b.paid!=null?b.paid:(b.tenor-b.left)*b.amt)+b.amt,left:Math.max(0,b.left-1),last:mk}}return b});
+      const bills=m.bills.map(b=>{if(b.left>0&&b.last!==mk&&day>=(b.due||1)){ch=true;tx=[{id:uid(),type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name,date:dt},...tx];return{...b,paid:(b.paid!=null?b.paid:(b.tenor-b.left)*b.amt)+b.amt,left:Math.max(0,b.left-1),last:mk}}return b}).filter(b=>b.left>0);if(bills.length!==m.bills.length)ch=true;
       const cm=Math.round(num(m.amt)*dec(m.freq)*4.33);
       if(m.trAuto&&cm>0&&trLast!==mk){ch=true;trLast=mk;tx=[{id:uid(),type:"expense",amt:cm,cat:"Transportasi",note:"Transportasi bulanan",date:dt},...tx]}
       return ch?{...s,tx,mm:{...m,bills,trLast}}:s})},[d.mm.bills.length,d.mm.trAuto]);
@@ -533,7 +542,7 @@ function App(){
   const save=x=>{
     if(modal==="tx"){setD(s=>({...s,tx:[x,...s.tx]}));setFresh(x.id);nav("home");toast("Transaksi tersimpan")}
     if(modal==="goal"){setD(s=>({...s,goals:[x,...s.goals]}));nav("goals");toast("Tujuan dibuat")}
-    if(modal==="inv"){setD(s=>({...s,inv:[...s.inv,x]}));nav("invest");toast("Investasi ditambahkan")}
+    if(modal==="inv"){const {fromCash,...a}=x;setD(s=>({...s,inv:[...s.inv,a],tx:fromCash&&a.cost?[{id:uid(),type:"transfer",amt:a.cost,cat:"Investasi",note:"Beli: "+a.name,date:iso(new Date())},...s.tx]:s.tx}));nav("invest");toast("Investasi ditambahkan")}
   };
   const addSave=(id,n)=>{
     const gg=d.goals.find(x=>x.id===id);if(!gg)return;
@@ -556,7 +565,7 @@ function App(){
         <button onClick={()=>setModal("tx")} className="md:hidden w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center active:scale-90 transition" aria-label="Tambah transaksi"><I n="plus"/></button>
       </div></header>
     <main className="max-w-3xl mx-auto px-4 py-5 pb-28 md:pb-10" key={tab}>
-      {tab==="home"&&<Home d={d} setTab={nav} open={setModal} fresh={fresh} reset={()=>confirm("Ganti semua data dengan data contoh?")&&setD(sample())} clear={()=>confirm("Hapus semua data?")&&setD({tx:[],goals:[],inv:[],mm:{mode:"pri",amt:"",freq:"",bills:[],dreams:[]}})}/>}
+      {tab==="home"&&<Home d={d} px={px} setTab={nav} open={setModal} fresh={fresh} reset={()=>confirm("Ganti semua data dengan data contoh?")&&setD(sample())} clear={()=>confirm("Hapus semua data?")&&setD({tx:[],goals:[],inv:[],mm:{mode:"pri",amt:"",freq:"",bills:[],dreams:[]}})}/>}
       {tab==="analytics"&&<Analytics d={d}/>}
       {tab==="manager"&&<Manager d={d} px={px} setD={setD} toast={toast}/>}
       {tab==="invest"&&<Invest d={d} px={px} refresh={refresh} pxt={pxt} pxe={pxe} open={setModal} del={id=>setD(s=>({...s,inv:s.inv.filter(a=>a.id!==id)}))} topup={(a,n)=>{setD(s=>({...s,tx:[{id:uid(),type:"transfer",amt:n,cat:"Investasi",note:"Top up: "+a.name,date:iso(new Date())},...s.tx],inv:s.inv.map(x=>x.id===a.id?{...x,cost:(x.cost||0)+n,cur:x.cur?x.cur+n:x.cur}:x)}));toast("Top up "+a.name+": "+rp(n))}} setval={(id,v)=>{setD(s=>({...s,inv:s.inv.map(x=>x.id===id?{...x,cur:v}:x)}));toast("Nilai diperbarui")}}/>}
