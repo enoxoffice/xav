@@ -14,6 +14,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#F9FAFB;color:#0f172a;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
+input,select,textarea{font-size:16px!important}
 @keyframes pg{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 @keyframes pop{from{opacity:0;transform:translateY(32px) scale(.95)}60%{opacity:1;transform:translateY(-4px) scale(1.01)}to{opacity:1;transform:none}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
@@ -75,8 +77,8 @@ const diffD=s=>{const t=new Date();t.setHours(0,0,0,0);return Math.round((t-new 
 const fd=s=>new Date(s+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
-const CAT={Makanan:"#059669",Transportasi:"#0ea5e9",Belanja:"#f59e0b",Hiburan:"#8b5cf6",Kesehatan:"#ef4444",Tagihan:"#64748b",Gaji:"#047857","Proyek Lepas":"#10b981"};
-const EXP=["Makanan","Transportasi","Belanja","Hiburan","Kesehatan","Tagihan"],INC=["Gaji","Proyek Lepas"];
+const CAT={Makanan:"#059669",Transportasi:"#0ea5e9",Belanja:"#f59e0b",Hiburan:"#8b5cf6",Kesehatan:"#ef4444",Tagihan:"#64748b",Gaji:"#047857","Proyek Lepas":"#10b981",Cicilan:"#dc2626",Pendidikan:"#2563eb","Rumah Tangga":"#d97706","Pulsa & Internet":"#0891b2",Langganan:"#e11d48","Sosial & Donasi":"#65a30d",Asuransi:"#475569","Perawatan Diri":"#f43f5e",Lainnya:"#94a3b8",Bonus:"#34d399","Bayar Utang":"#14b8a6","Hasil Investasi":"#0d9488",Hadiah:"#4ade80"};
+const EXP=["Makanan","Transportasi","Belanja","Hiburan","Kesehatan","Tagihan","Cicilan","Pendidikan","Rumah Tangga","Pulsa & Internet","Langganan","Sosial & Donasi","Asuransi","Perawatan Diri","Lainnya"],INC=["Gaji","Proyek Lepas","Bonus","Bayar Utang","Hasil Investasi","Hadiah","Lainnya"];
 const OLD={Food:"Makanan",Transport:"Transportasi",Shopping:"Belanja",Entertainment:"Hiburan",Health:"Kesehatan",Bills:"Tagihan",Salary:"Gaji",Freelance:"Proyek Lepas"};
 const ITYPE=["Saham","Reksadana","Kripto","Emas"];
 const GC={
@@ -420,7 +422,7 @@ function AllocChart({v}){
     return()=>{c.current&&c.current.destroy()}},[v.join()]);
   return <canvas ref={r}/>;
 }
-function Manager({d,px,setD}){
+function Manager({d,px,setD,toast}){
   const m=d.mm,up=p=>setD(s=>({...s,mm:{...s.mm,...p}})),addTx=o=>setD(s=>({...s,tx:[{id:uid(),date:iso(new Date()),...o},...s.tx]}));
   const [bf,setBf]=useState({name:"",amt:"",tenor:"",left:"",due:""}),[df,setDf]=useState({name:"",target:"",months:""}),[dep,setDep]=useState({});
   const mk=iso(new Date()).slice(0,7),pri=m.mode==="pri";
@@ -437,9 +439,9 @@ function Manager({d,px,setD}){
   const gTot=m.dreams.reduce((s,x)=>s+mo(x),0);
   const eta=n=>{const t=new Date();t.setMonth(t.getMonth()+n);return t.toLocaleDateString("id-ID",{month:"long",year:"numeric"})};
   const addBill=()=>{const a=num(bf.amt),t=num(bf.tenor),l=bf.left===""?t:Math.min(t,num(bf.left));if(!bf.name.trim()||!a||!t)return;up({bills:[...m.bills,{id:uid(),name:bf.name.trim(),amt:a,tenor:t,left:l,due:Math.min(31,num(bf.due)),last:""}]});setBf({name:"",amt:"",tenor:"",left:"",due:""})};
-  const payBill=b=>{addTx({type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name});up({bills:m.bills.map(x=>x.id===b.id?{...x,left:x.left-1,last:mk}:x)})};
+  const payBill=b=>{addTx({type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name});up({bills:m.bills.map(x=>x.id===b.id?{...x,left:x.left-1,last:mk}:x)});toast("Cicilan dibayar: "+b.name+" ("+rp(b.amt)+")")};
   const addDream=()=>{const t=num(df.target),n=num(df.months);if(!df.name.trim()||!t||!n)return;up({dreams:[...m.dreams,{id:uid(),name:df.name.trim(),target:t,saved:0,months:n}]});setDf({name:"",target:"",months:""})};
-  const deposit=x=>{const n=num(dep[x.id]);if(!n)return;addTx({type:"transfer",amt:n,cat:"Tabungan",note:"Setor: "+x.name});up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:y.saved+n}:y)});setDep({...dep,[x.id]:""})};
+  const deposit=x=>{const n=num(dep[x.id]);if(!n)return;addTx({type:"transfer",amt:n,cat:"Tabungan",note:"Setor: "+x.name});up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:y.saved+n}:y)});setDep({...dep,[x.id]:""});toast("Disetor ke "+x.name+": "+rp(n))};
   const hasEf=m.dreams.some(x=>/darurat/i.test(x.name));
   return <div className="st space-y-5">
     <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white p-6 shadow-xl shadow-emerald-600/20">
@@ -455,7 +457,8 @@ function Manager({d,px,setD}){
       <div className="relative grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl mb-4"><span className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-lg bg-white shadow transition-transform duration-300" style={{transform:pri?"translateX(0)":"translateX(100%)"}}/>
         {[["pri","Kendaraan pribadi","car"],["pub","Transportasi umum","bus"]].map(([k,l,ic])=><button key={k} onClick={()=>up({mode:k})} className={"relative py-2.5 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors "+(m.mode===k?"text-emerald-700":"text-slate-500")}><I n={ic} s={16}/>{l}</button>)}</div>
       <div className="grid grid-cols-2 gap-3"><Lbl t={pri?"Sekali isi bensin":"Tarif sekali jalan"}><MoneyIn v={m.amt} set={v=>up({amt:v})} ph="50.000"/></Lbl><Lbl t={pri?"Isi bensin / minggu":"Perjalanan / minggu"}><DecIn v={m.freq} set={v=>up({freq:v})} ph="2"/></Lbl></div>
-      <div className="flex items-center justify-between rounded-xl bg-emerald-50 p-3"><div><p className="text-xs text-emerald-700">Estimasi per bulan (x4,33)</p><p className="font-extrabold text-emerald-800">{rp(commute)}</p></div><Btn className="!py-2 disabled:opacity-50" disabled={!commute} onClick={()=>{addTx({type:"expense",amt:commute,cat:"Transportasi",note:"Transportasi bulanan"});up({trLast:mk})}}>Catat</Btn></div>
+      <div className="flex items-center justify-between rounded-xl bg-emerald-50 p-3"><div><p className="text-xs text-emerald-700">Estimasi per bulan (x4,33)</p><p className="font-extrabold text-emerald-800">{rp(commute)}</p></div><Btn className="!py-2 disabled:opacity-50" disabled={!commute} onClick={()=>{if(m.trLast===mk&&!confirm("Transportasi bulan ini sudah dicatat. Catat lagi?"))return;addTx({type:"expense",amt:commute,cat:"Transportasi",note:"Transportasi bulanan"});up({trLast:mk});toast("Transportasi dicatat: "+rp(commute)+". Saldo berkurang.")}}>Catat</Btn></div>
+      {m.trLast===mk&&<p className="text-[11px] text-emerald-700 mt-2">Sudah tercatat bulan ini. Cek di Beranda, Transaksi terakhir.</p>}
       <label className="flex items-center gap-2 mt-3 text-xs font-semibold text-slate-600 cursor-pointer"><input type="checkbox" className="w-4 h-4 accent-emerald-600" checked={!!m.trAuto} onChange={e=>up({trAuto:e.target.checked})}/>Potong otomatis dari saldo tiap bulan</label>
     </Card>
     <Card className="p-5"><h2 className="font-bold mb-3">Cicilan & tagihan tetap</h2>
@@ -554,7 +557,7 @@ function App(){
     <main className="max-w-3xl mx-auto px-4 py-5 pb-28 md:pb-10" key={tab}>
       {tab==="home"&&<Home d={d} setTab={nav} open={setModal} fresh={fresh} reset={()=>confirm("Ganti semua data dengan data contoh?")&&setD(sample())} clear={()=>confirm("Hapus semua data?")&&setD({tx:[],goals:[],inv:[],mm:{mode:"pri",amt:"",freq:"",bills:[],dreams:[]}})}/>}
       {tab==="analytics"&&<Analytics d={d}/>}
-      {tab==="manager"&&<Manager d={d} px={px} setD={setD}/>}
+      {tab==="manager"&&<Manager d={d} px={px} setD={setD} toast={toast}/>}
       {tab==="invest"&&<Invest d={d} px={px} refresh={refresh} pxt={pxt} pxe={pxe} open={setModal} del={id=>setD(s=>({...s,inv:s.inv.filter(a=>a.id!==id)}))}/>}
     </main>
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/90 backdrop-blur border-t border-slate-100" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>
