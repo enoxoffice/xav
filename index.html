@@ -133,7 +133,7 @@ const load=()=>{try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.tx&&x.
   if(!x.mm)x.mm={mode:"pri",amt:"",freq:"",bills:[],dreams:x.goals.map(g=>({id:g.id,name:g.name,target:g.target,saved:g.saved||0,months:12}))};
   x.inv.forEach(a=>{if(a.type==="Crypto")a.type="Kripto";if(a.goal===undefined)a.goal=null});
   return x}}catch(e){}return sample()};
-const pr=(a,px)=>a.manual?a.units*a.nav:(px[a.sym]&&px[a.sym].price?a.units*px[a.sym].price:null);
+const pr=(a,px)=>a.manual?(a.units>0&&a.nav>0?a.units*a.nav:(a.cur||null)):(px[a.sym]&&px[a.sym].price?a.units*px[a.sym].price:null);
 const val=(a,px)=>{const v=pr(a,px);return v==null?(a.cost||0):v};
 const gsum=(g,inv,px)=>g.saved+inv.reduce((t,a)=>t+(a.goal===g.id?val(a,px):0),0);
 const ser=(a,px)=>a.manual?null:(px[a.sym]&&px[a.sym].series)||null;
@@ -237,8 +237,8 @@ function AddModal({kind,goals,onClose,onSave}){
     if(kind==="tx"){if(!num(f.amt))return setErr("Isi nominal lebih dari 0.");onSave({id:uid(),type:f.type,amt:num(f.amt),cat:f.cat,note:f.note.trim(),date:f.date||iso(new Date())})}
     else if(kind==="goal"){const nm=f.name.trim();if(!nm)return setErr("Isi nama tujuan.");if(!num(f.target))return setErr("Isi target dana.");const sv=num(f.saved);
       onSave({id:uid(),name:nm,cat:f.gcat,target:num(f.target),saved:sv,hist:sv?[{d:iso(new Date()),amt:sv}]:[]})}
-    else{const un=f.itype==="Saham"?num(f.units):dec(f.units);if(!(un>0))return setErr("Isi jumlah dengan benar.");const goal=f.goal||null;
-      if(f.itype==="Reksadana"){if(!f.name.trim())return setErr("Isi nama reksadana.");if(!num(f.nav))return setErr("Isi NAV per unit.");onSave({id:uid(),name:f.name.trim(),type:"Reksadana",manual:true,units:un,nav:num(f.nav),cost:num(f.amt)||Math.round(un*num(f.nav)),goal})}
+    else{const un=f.itype==="Saham"?num(f.units):dec(f.units);if(f.itype!=="Reksadana"&&!(un>0))return setErr("Isi jumlah dengan benar.");const goal=f.goal||null;
+      if(f.itype==="Reksadana"){if(!f.name.trim())return setErr("Isi nama reksadana.");const cost=num(f.amt)||Math.round(un*num(f.nav));if(!cost)return setErr("Isi total modal, atau jumlah unit dan NAV.");onSave({id:uid(),name:f.name.trim(),type:"Reksadana",manual:true,units:un||0,nav:num(f.nav),cost,goal})}
       else{const c=f.code.trim().toUpperCase();if(f.itype!=="Emas"&&!/^[A-Z0-9.-]{1,12}$/.test(c))return setErr("Isi kode aset yang valid.");
         const sp=f.itype==="Saham"?{sym:c.replace(/\.JK$/,"")+".JK",kind:"idr"}:f.itype==="Kripto"?{sym:c.replace(/-USD$/,"")+"-USD",kind:"usd"}:{sym:"GC=F",kind:"gold"};
         onSave({id:uid(),name:f.name.trim()||(f.itype==="Emas"?"Emas":c),type:f.itype,...sp,units:un,cost:num(f.amt)||null,goal})}}
@@ -255,11 +255,11 @@ function AddModal({kind,goals,onClose,onSave}){
       <p className="text-[11px] text-slate-400 mt-1.5">Ikon mengikuti nama tujuan. Gambar sampul dibuat otomatis oleh AI.</p></div>}
     {kind==="inv"&&<Lbl t="Jenis aset"><select className={inp} value={f.itype} onChange={e=>setF(s=>({...s,itype:e.target.value,units:""}))}>{ITYPE.map(x=><option key={x}>{x}</option>)}</select></Lbl>}
     {kind==="inv"&&(f.itype==="Saham"||f.itype==="Kripto")&&<Lbl t={f.itype==="Saham"?"Kode saham (contoh: BBCA)":"Kode kripto (contoh: BTC)"}><input className={inp} value={f.code} onChange={e=>u("code",e.target.value)}/></Lbl>}
-    {kind==="inv"&&<Lbl t={f.itype==="Emas"?"Berat (gram)":f.itype==="Saham"?"Jumlah lembar":"Jumlah unit"}>{f.itype==="Saham"?<MoneyIn rpx={false} v={f.units} set={v=>u("units",v)} ph="100"/>:<DecIn v={f.units} set={v=>u("units",v)} ph="0,5"/>}</Lbl>}
-    {kind==="inv"&&f.itype==="Reksadana"&&<Lbl t="NAV per unit (isi manual)"><MoneyIn v={f.nav} set={v=>u("nav",v)} ph="1.500"/></Lbl>}
+    {kind==="inv"&&<Lbl t={f.itype==="Emas"?"Berat (gram)":f.itype==="Saham"?"Jumlah lembar":f.itype==="Reksadana"?"Jumlah unit (opsional)":"Jumlah unit"}>{f.itype==="Saham"?<MoneyIn rpx={false} v={f.units} set={v=>u("units",v)} ph="100"/>:<DecIn v={f.units} set={v=>u("units",v)} ph="0,5"/>}</Lbl>}
+    {kind==="inv"&&f.itype==="Reksadana"&&<Lbl t="NAV per unit (opsional)"><MoneyIn v={f.nav} set={v=>u("nav",v)} ph="1.500"/></Lbl>}
     {kind==="goal"&&<Lbl t="Target dana"><MoneyIn v={f.target} set={v=>u("target",v)} ph="10.000.000"/></Lbl>}
     {kind==="goal"&&<Lbl t="Dana awal (opsional)"><MoneyIn v={f.saved} set={v=>u("saved",v)} ph="0"/></Lbl>}
-    {kind!=="goal"&&<Lbl t={kind==="inv"?"Modal total (opsional)":"Nominal"}><MoneyIn v={f.amt} set={v=>u("amt",v)} ph="50.000"/></Lbl>}
+    {kind!=="goal"&&<Lbl t={kind==="inv"?(f.itype==="Reksadana"?"Total modal (nominal top up)":"Modal total (opsional)"):"Nominal"}><MoneyIn v={f.amt} set={v=>u("amt",v)} ph="50.000"/></Lbl>}
     {kind==="inv"&&<Lbl t="Untuk tujuan (opsional)"><select className={inp} value={f.goal} onChange={e=>u("goal",e.target.value)}><option value="">Tanpa tujuan</option>{goals.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select>
       <span className="block text-[11px] text-slate-400 mt-1">{goals.length?(f.goal?"Nilai aset ini ikut dihitung ke progres tujuan.":"Pilih tujuan agar jelas investasi ini untuk apa."):"Belum ada tujuan. Buat dulu di tab Manager."}</span></Lbl>}
     {kind==="tx"&&<><Lbl t="Kategori"><select className={inp} value={f.cat} onChange={e=>u("cat",e.target.value)}>{(f.type==="income"?INC:EXP).map(x=><option key={x}>{x}</option>)}</select></Lbl>
@@ -368,7 +368,7 @@ function Goals({d,px,open,pick,busyId}){
   </div>;
 }
 
-function Invest({d,px,refresh,pxt,pxe,open,del}){
+function Invest({d,px,refresh,pxt,pxe,open,del,topup,setval}){
   const [ai,setAi]=useState(null),[busy,setBusy]=useState(false),[err,setErr]=useState("");
   const rows=d.inv.map(a=>({a,v:val(a,px),s:ser(a,px),p:px[a.sym]}));
   const tot=rows.reduce((s,r)=>s+r.v,0),cost=rows.reduce((s,r)=>s+(r.a.cost||r.v),0),pl=tot-cost;
@@ -384,7 +384,7 @@ function Invest({d,px,refresh,pxt,pxe,open,del}){
     setBusy(false)};
   const rec=s=>{const x=st(s);return x>=0?(x>.03?"Momentum kuat. Tahan posisi, tambah bertahap (DCA) bila perlu.":"Tren naik tipis. Pertahankan posisi dan pantau."):(x<-.03?"Tekanan turun cukup dalam. Tunda tambah posisi sampai stabil.":"Tren melemah ringan. Tahan dan pantau.")};
   const gn=id=>(d.mm.dreams.find(x=>x.id===id)||{}).name;
-  const unit=a=>a.units+(a.type==="Emas"?" g":a.type==="Saham"?" lbr":" unit");
+  const unit=a=>a.manual&&!(a.units>0)?"nilai manual":a.units+(a.type==="Emas"?" g":a.type==="Saham"?" lbr":" unit");
   return <div className="st space-y-5">
     <Card className="p-5"><div className="flex items-start justify-between"><div><p className="text-sm text-slate-500">Nilai portofolio</p><p className="text-3xl font-extrabold tracking-tight mt-1"><Count v={tot}/></p></div>
       <button onClick={refresh} className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-full px-3 py-2"><I n="reset" s={14}/>Perbarui</button></div>
@@ -408,7 +408,7 @@ function Invest({d,px,refresh,pxt,pxe,open,del}){
     <div className="flex items-center justify-between"><h2 className="font-bold">Aset investasi</h2><Btn onClick={()=>open("inv")} className="!py-2.5 flex items-center gap-1.5"><I n="plus" s={16}/>Aset</Btn></div>
     {d.inv.length?<div className="grid sm:grid-cols-2 gap-3">{rows.map(({a,v})=>{const c=a.cost||v,p=v-c;return <Card key={a.id} className="lift p-4 flex items-center gap-3">
       <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><I n={a.type==="Emas"?"wallet":a.type==="Kripto"?"zap":a.type==="Saham"?"trend":"pie"}/></div>
-      <div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{a.name}</p><p className="text-xs text-slate-400">{a.type} - {unit(a)}</p>{gn(a.goal)&&<p className="text-[11px] font-semibold text-emerald-700 truncate mt-0.5">Untuk: {gn(a.goal)}</p>}</div>
+      <div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{a.name}</p><p className="text-xs text-slate-400">{a.type} - {unit(a)}</p>{gn(a.goal)&&<p className="text-[11px] font-semibold text-emerald-700 truncate mt-0.5">Untuk: {gn(a.goal)}</p>}{a.manual&&<div className="flex gap-3 mt-1"><button onClick={()=>{const n=num(prompt("Nominal top up (Rp)"));n>0&&topup(a,n)}} className="text-[11px] font-bold text-emerald-700">Top up</button>{!(a.units>0&&a.nav>0)&&<button onClick={()=>{const v=num(prompt("Nilai saat ini di aplikasi (Rp)"));v>0&&setval(a.id,v)}} className="text-[11px] font-bold text-slate-500">Update nilai</button>}</div>}</div>
       <div className="text-right"><p className="font-bold text-sm">{rp(v)}</p><p className={"text-xs font-semibold "+(p>=0?"text-emerald-600":"text-red-500")}>{p>=0?"+":""}{sh(p)}</p></div>
       <button onClick={()=>confirm("Hapus aset ini?")&&del(a.id)} aria-label="Hapus aset" className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></Card>})}</div>:<Card><Empty t="Belum ada aset investasi."/></Card>}
   </div>;
@@ -558,7 +558,7 @@ function App(){
       {tab==="home"&&<Home d={d} setTab={nav} open={setModal} fresh={fresh} reset={()=>confirm("Ganti semua data dengan data contoh?")&&setD(sample())} clear={()=>confirm("Hapus semua data?")&&setD({tx:[],goals:[],inv:[],mm:{mode:"pri",amt:"",freq:"",bills:[],dreams:[]}})}/>}
       {tab==="analytics"&&<Analytics d={d}/>}
       {tab==="manager"&&<Manager d={d} px={px} setD={setD} toast={toast}/>}
-      {tab==="invest"&&<Invest d={d} px={px} refresh={refresh} pxt={pxt} pxe={pxe} open={setModal} del={id=>setD(s=>({...s,inv:s.inv.filter(a=>a.id!==id)}))}/>}
+      {tab==="invest"&&<Invest d={d} px={px} refresh={refresh} pxt={pxt} pxe={pxe} open={setModal} del={id=>setD(s=>({...s,inv:s.inv.filter(a=>a.id!==id)}))} topup={(a,n)=>{setD(s=>({...s,tx:[{id:uid(),type:"transfer",amt:n,cat:"Investasi",note:"Top up: "+a.name,date:iso(new Date())},...s.tx],inv:s.inv.map(x=>x.id===a.id?{...x,cost:(x.cost||0)+n,cur:x.cur?x.cur+n:x.cur}:x)}));toast("Top up "+a.name+": "+rp(n))}} setval={(id,v)=>{setD(s=>({...s,inv:s.inv.map(x=>x.id===id?{...x,cur:v}:x)}));toast("Nilai diperbarui")}}/>}
     </main>
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/90 backdrop-blur border-t border-slate-100" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>
       <div className="relative grid grid-cols-4">
