@@ -4,15 +4,21 @@ const OK = /^[A-Z0-9.=^-]{1,15}$/;
 const json = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=30" } });
 
 async function get(sym) {
-  const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=1mo`, { headers: { "User-Agent": "Mozilla/5.0" } });
-  if (!r.ok) throw new Error("Yahoo HTTP " + r.status);
-  const j = await r.json();
-  const res = j.chart && j.chart.result && j.chart.result[0];
-  if (!res) throw new Error("Simbol tidak ditemukan");
-  const closes = (res.indicators.quote[0].close || []).filter(v => v != null);
-  const price = res.meta.regularMarketPrice ?? closes[closes.length - 1];
-  if (!price || closes.length < 2) throw new Error("Data harga kosong");
-  return { price, series: closes, time: res.meta.regularMarketTime };
+  let last;
+  for (const host of ["query1", "query2"]) {
+    try {
+      const r = await fetch(`https://${host}.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sym)}?interval=1d&range=1mo`, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" } });
+      if (!r.ok) throw new Error("Yahoo HTTP " + r.status);
+      const j = await r.json();
+      const res = j.chart && j.chart.result && j.chart.result[0];
+      if (!res) throw new Error("Simbol tidak ditemukan");
+      const closes = (res.indicators.quote[0].close || []).filter(v => v != null);
+      const price = res.meta.regularMarketPrice ?? closes[closes.length - 1];
+      if (!price || closes.length < 2) throw new Error("Data harga kosong");
+      return { price, series: closes, time: res.meta.regularMarketTime };
+    } catch (e) { last = e; }
+  }
+  throw last;
 }
 
 export default async (req) => {

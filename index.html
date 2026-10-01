@@ -3,22 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Xav</title>
+<title>Xav - Keuangan Pribadi</title>
+<meta name="theme-color" content="#064e3b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2040%2040%27%3E%3Crect%20width%3D%2740%27%20height%3D%2740%27%20rx%3D%2711%27%20fill%3D%27%23064e3b%27/%3E%3Cpath%20d%3D%27M11%2012.5c5%203.2%208.4%208.2%2012%2015%27%20stroke%3D%27%236ee7b7%27%20stroke-width%3D%274.2%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27/%3E%3Cpath%20d%3D%27M12%2029c4.6-3.4%209-9.4%2014-17%27%20stroke%3D%27%23fff%27%20stroke-width%3D%274.2%27%20stroke-linecap%3D%27round%27%20fill%3D%27none%27/%3E%3Ccircle%20cx%3D%2728.5%27%20cy%3D%2710.5%27%20r%3D%273%27%20fill%3D%27%23fbbf24%27/%3E%3C/svg%3E">
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#F9FAFB;color:#0f172a;-webkit-tap-highlight-color:transparent}
-@keyframes pg{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#F9FAFB;color:#0f172a;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+@keyframes pg{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:translateY(32px) scale(.95)}60%{opacity:1;transform:translateY(-4px) scale(1.01)}to{opacity:1;transform:none}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes row{from{opacity:0;transform:translateX(-12px);background:#d1fae5}to{opacity:1;transform:none}}
-.pg{animation:pg .35s ease both}.pop{animation:pop .3s cubic-bezier(.2,.8,.2,1) both}.fade{animation:fade .2s both}.row{animation:row .6s ease both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes rise{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes flt{0%,100%{transform:translate(0,0)}50%{transform:translate(12px,-16px)}}
+@keyframes shine{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,24px) scale(.9)}12%,85%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,12px) scale(.95)}}
+@keyframes burst{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r)) scale(.5)}}
+@keyframes tick{0%{transform:scale(0)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
+.pg{animation:pg .4s ease both}
+.pgb{animation:pg .5s cubic-bezier(.2,.8,.2,1) backwards}
+.st>*{animation:pg .5s cubic-bezier(.2,.8,.2,1) backwards}
+.st>*:nth-child(2){animation-delay:.06s}.st>*:nth-child(3){animation-delay:.12s}.st>*:nth-child(4){animation-delay:.18s}.st>*:nth-child(5){animation-delay:.24s}.st>*:nth-child(6){animation-delay:.3s}.st>*:nth-child(7){animation-delay:.36s}.st>*:nth-child(8){animation-delay:.42s}
+.pop{animation:pop .4s cubic-bezier(.2,.8,.2,1) both}.fade{animation:fade .25s both}.row{animation:row .6s ease both}
+.bar{transform-origin:left;animation:grow .9s cubic-bezier(.2,.8,.2,1) .15s both}
+.rise{transform-box:fill-box;transform-origin:bottom;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.1s ease .1s forwards}
+.fl{animation:flt 8s ease-in-out infinite}.fl2{animation:flt 11s ease-in-out infinite reverse}
+.shine{background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.4) 50%,transparent 70%);background-size:200% 100%;animation:shine 1.8s linear infinite}
+.lift{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,border-color .2s}
+.lift:hover{transform:translateY(-4px);box-shadow:0 16px 32px -14px rgba(5,150,105,.4)}
+.lift:active{transform:scale(.98)}
+.toast{animation:toast 2.4s ease both}.burst{animation:burst 1.1s cubic-bezier(.2,.8,.3,1) both}.tick{animation:tick .5s .15s cubic-bezier(.2,.8,.2,1) both}
+input[type=date]{display:block;width:100%;max-width:100%;min-width:0;-webkit-appearance:none;appearance:none;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left;min-width:0}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #059669;outline-offset:2px}
-.bar{transition:width .6s ease}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.draw{stroke-dasharray:none;stroke-dashoffset:0}}
 </style>
 </head>
 <body>
@@ -38,7 +63,9 @@ zap:["M13 2L3 14h9l-1 8 10-12h-9z"],trash:["M3 6h18","M19 6v14a2 2 0 0 1-2 2H7a2
 pie:["M21.21 15.89A10 10 0 1 1 8 2.83","M22 12A10 10 0 0 0 12 2v10z"],
 check:["M20 6L9 17l-5-5"]
 };
-const I=({n,s=20,c=""})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c} aria-hidden="true">{P[n].map((d,i)=><path key={i} d={d}/>)}</svg>;
+Object.assign(P,{"shield-check": "<path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\" /> <path d=\"m9 12 2 2 4-4\" />", "plane": "<path d=\"M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z\" />", "house": "<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />", "car": "<path d=\"M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2\" /> <circle cx=\"7\" cy=\"17\" r=\"2\" /> <path d=\"M9 17h6\" /> <circle cx=\"17\" cy=\"17\" r=\"2\" />", "bike": "<circle cx=\"18.5\" cy=\"17.5\" r=\"3.5\" /> <circle cx=\"5.5\" cy=\"17.5\" r=\"3.5\" /> <circle cx=\"15\" cy=\"5\" r=\"1\" /> <path d=\"M12 17.5V14l-3-3 4-3 2 3h2\" />", "laptop": "<path d=\"M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z\" /> <path d=\"M20.054 15.987H3.946\" />", "graduation-cap": "<path d=\"M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z\" /> <path d=\"M22 10v6\" /> <path d=\"M6 12.5V16a6 3 0 0 0 12 0v-3.5\" />", "gem": "<path d=\"M10.5 3 8 9l4 13 4-13-2.5-6\" /> <path d=\"M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z\" /> <path d=\"M2 9h20\" />", "moon-star": "<path d=\"M18 5h4\" /> <path d=\"M20 3v4\" /> <path d=\"M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401\" />", "umbrella": "<path d=\"M12 13v7a2 2 0 0 0 4 0\" /> <path d=\"M12 2v2\" /> <path d=\"M20.992 13a1 1 0 0 0 .97-1.274 10.284 10.284 0 0 0-19.923 0A1 1 0 0 0 3 13z\" />", "heart-pulse": "<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\" /> <path d=\"M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\" />", "baby": "<path d=\"M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5\" /> <path d=\"M15 12h.01\" /> <path d=\"M19.38 6.813A9 9 0 0 1 20.8 10.2a2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1\" /> <path d=\"M9 12h.01\" />", "store": "<path d=\"M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5\" /> <path d=\"M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244\" /> <path d=\"M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05\" />", "camera": "<path d=\"M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z\" /> <circle cx=\"12\" cy=\"13\" r=\"3\" />", "piggy-bank": "<path d=\"M11 17h3v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a3.16 3.16 0 0 0 2-2h1a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a5 5 0 0 0-2-4V3a4 4 0 0 0-3.2 1.6l-.3.4H11a6 6 0 0 0-6 6v1a5 5 0 0 0 2 4v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1z\" /> <path d=\"M16 10h.01\" /> <path d=\"M2 8v1a2 2 0 0 0 2 2h1\" />", "sparkles": "<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\" /> <path d=\"M20 2v4\" /> <path d=\"M22 4h-4\" /> <circle cx=\"4\" cy=\"20\" r=\"2\" />", "image": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\" /> <circle cx=\"9\" cy=\"9\" r=\"2\" /> <path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\" />"});
+P.bus="<path d=\"M8 6v6\"/><path d=\"M15 6v6\"/><path d=\"M2 12h19.6\"/><path d=\"M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3\"/><circle cx=\"7\" cy=\"18\" r=\"2\"/><path d=\"M9 18h5\"/><circle cx=\"16\" cy=\"18\" r=\"2\"/>";
+const I=({n,s=20,c=""})=>{const p=P[n];return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={c} aria-hidden="true" {...(typeof p==="string"?{dangerouslySetInnerHTML:{__html:p}}:{children:p.map((d,i)=><path key={i} d={d}/>)})}/>};
 
 const rp=n=>(n<0?"-":"")+"Rp"+Math.round(Math.abs(n)).toLocaleString("id-ID");
 const sh=n=>n>=1e6?(n/1e6).toFixed(1).replace(".0","")+"jt":n>=1e3?Math.round(n/1e3)+"rb":Math.round(n)+"";
@@ -48,64 +75,124 @@ const diffD=s=>{const t=new Date();t.setHours(0,0,0,0);return Math.round((t-new 
 const fd=s=>new Date(s+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"numeric"});
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
-const CAT={Food:"#059669",Transport:"#0ea5e9",Shopping:"#f59e0b",Entertainment:"#8b5cf6",Health:"#ef4444",Bills:"#64748b",Salary:"#047857",Freelance:"#10b981"};
-const EXP=["Food","Transport","Shopping","Entertainment","Health","Bills"],INC=["Salary","Freelance"];
-const ITYPE=["Saham","Reksadana","Crypto","Emas"];
+const CAT={Makanan:"#059669",Transportasi:"#0ea5e9",Belanja:"#f59e0b",Hiburan:"#8b5cf6",Kesehatan:"#ef4444",Tagihan:"#64748b",Gaji:"#047857","Proyek Lepas":"#10b981"};
+const EXP=["Makanan","Transportasi","Belanja","Hiburan","Kesehatan","Tagihan"],INC=["Gaji","Proyek Lepas"];
+const OLD={Food:"Makanan",Transport:"Transportasi",Shopping:"Belanja",Entertainment:"Hiburan",Health:"Kesehatan",Bills:"Tagihan",Salary:"Gaji",Freelance:"Proyek Lepas"};
+const ITYPE=["Saham","Reksadana","Kripto","Emas"];
+const GC={
+darurat:{l:"Dana Darurat",ic:"shield-check",a:"#10b981",b:"#047857"},
+rumah:{l:"Rumah / Properti",ic:"house",a:"#f59e0b",b:"#c2410c"},
+mobil:{l:"Mobil",ic:"car",a:"#6366f1",b:"#3730a3"},
+motor:{l:"Motor / Sepeda",ic:"bike",a:"#f97316",b:"#b91c1c"},
+liburan:{l:"Liburan",ic:"plane",a:"#38bdf8",b:"#0369a1"},
+gadget:{l:"Gadget",ic:"laptop",a:"#a78bfa",b:"#5b21b6"},
+pendidikan:{l:"Pendidikan",ic:"graduation-cap",a:"#60a5fa",b:"#1d4ed8"},
+nikah:{l:"Pernikahan",ic:"gem",a:"#fb7185",b:"#be123c"},
+ibadah:{l:"Ibadah / Haji",ic:"moon-star",a:"#2dd4bf",b:"#0f766e"},
+pensiun:{l:"Pensiun",ic:"umbrella",a:"#fbbf24",b:"#b45309"},
+kesehatan:{l:"Kesehatan",ic:"heart-pulse",a:"#f87171",b:"#b91c1c"},
+anak:{l:"Anak",ic:"baby",a:"#f9a8d4",b:"#be185d"},
+bisnis:{l:"Bisnis",ic:"store",a:"#fb923c",b:"#9a3412"},
+hobi:{l:"Hobi",ic:"camera",a:"#e879f9",b:"#86198f"},
+lainnya:{l:"Lainnya",ic:"piggy-bank",a:"#34d399",b:"#065f46"}};
+const KW=[["darurat",/darurat|emergency/],["rumah",/rumah|\bdp\b|kpr|apartemen|tanah|properti|renovasi/],["mobil",/mobil|\bcar\b/],["motor",/motor|vespa|sepeda/],["liburan",/libur|jalan|trip|wisata|tiket|travel|bali|jepang|korea|eropa|honeymoon/],["gadget",/laptop|\bhp\b|gadget|iphone|komputer|macbook|ipad|kamera|\bps5\b|tablet|handphone/],["pendidikan",/sekolah|kuliah|pendidikan|kursus|\bs2\b|\bs3\b|beasiswa|\bspp\b|\bles\b/],["nikah",/nikah|wedding|pernikahan|lamaran|resepsi/],["ibadah",/haji|umroh|umrah|ibadah|zakat|kurban|qurban/],["pensiun",/pensiun|hari tua|masa tua/],["kesehatan",/sehat|medis|operasi|rumah sakit|asuransi|berobat|dokter/],["anak",/\banak\b|bayi|lahiran|melahirkan|baby/],["bisnis",/bisnis|usaha|modal|toko|warung|startup/],["hobi",/hobi|gitar|musik|\bgame\b|olahraga|\bgym\b|lukis/]];
+const guess=n=>{const s=String(n).toLowerCase();for(const[k,r]of KW)if(r.test(s))return k;return"lainnya"};
+const dig=v=>String(v).replace(/\D/g,"").replace(/^0+(?=\d)/,"");
+const fmtN=v=>dig(v).replace(/\B(?=(\d{3})+(?!\d))/g,".");
+const num=v=>Number(dig(v))||0;
+const dec=v=>{const n=Number(String(v).trim().replace(",","."));return isFinite(n)?n:0};
+const shrink=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>{const W=640,H=360,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d"),k=Math.max(W/im.width,H/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(W-w)/2,(H-h)/2,w,h);ok(c.toDataURL("image/jpeg",.72))};im.onerror=()=>no(new Error("gambar tidak valid"));im.src=src});
 
 function sample(){
   let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;
   const tx=[];
   for(let i=0;i<400;i++){
     const d=ago(i),day=Number(d.slice(8,10));
-    if(day===25)tx.push({id:uid()+i+"s",type:"income",amt:12e6,cat:"Salary",note:"Gaji bulanan",date:d});
-    if(r()<.04)tx.push({id:uid()+i+"f",type:"income",amt:(1+Math.floor(r()*4))*5e5,cat:"Freelance",note:"Proyek freelance",date:d});
+    if(day===25)tx.push({id:uid()+i+"s",type:"income",amt:12e6,cat:"Gaji",note:"Gaji bulanan",date:d});
+    if(r()<.04)tx.push({id:uid()+i+"f",type:"income",amt:(1+Math.floor(r()*4))*5e5,cat:"Proyek Lepas",note:"Proyek lepas",date:d});
     const n=r()<.7?1:2;
-    for(let k=0;k<n;k++){const c=EXP[Math.floor(r()*r()*6)];const base={Food:45e3,Transport:25e3,Shopping:2e5,Entertainment:12e4,Health:15e4,Bills:3e5}[c];
-      tx.push({id:uid()+i+k,type:"expense",amt:Math.round(base*(.5+r())/5e3)*5e3,cat:c,note:{Food:"Makan siang",Transport:"Ojek online",Shopping:"Belanja bulanan",Entertainment:"Nonton & hiburan",Health:"Apotek",Bills:"Tagihan listrik/internet"}[c],date:d});}
+    for(let k=0;k<n;k++){const c=EXP[Math.floor(r()*r()*6)];const base={Makanan:45e3,Transportasi:25e3,Belanja:2e5,Hiburan:12e4,Kesehatan:15e4,Tagihan:3e5}[c];
+      tx.push({id:uid()+i+k,type:"expense",amt:Math.round(base*(.5+r())/5e3)*5e3,cat:c,note:{Makanan:"Makan siang",Transportasi:"Ojek online",Belanja:"Belanja bulanan",Hiburan:"Nonton & hiburan",Kesehatan:"Apotek",Tagihan:"Tagihan listrik/internet"}[c],date:d});}
   }
-  const g=(name,target,saved,alloc,h)=>({id:uid(),name,target,saved,alloc,hist:h.map((a,i)=>({d:ago(5+i*14),amt:a}))});
+  const g=(name,cat,target,saved,h)=>({id:uid(),name,cat,target,saved,hist:h.map((a,i)=>({d:ago(5+i*14),amt:a}))});
+  const gs=[g("Tabungan Jalan-jalan","liburan",15e6,2e6,[1e6,1e6]),g("Uang Darurat","darurat",36e6,10e6,[3e6,3e6,4e6]),g("DP Rumah","rumah",150e6,20e6,[8e6,12e6]),g("Laptop Baru","gadget",18e6,11e6,[3e6,4e6,4e6]),g("Dana Pendidikan","pendidikan",60e6,3e6,[1e6,2e6])];
   const inv=[
-    {id:uid(),name:"BBCA",type:"Saham",sym:"BBCA.JK",kind:"idr",units:1000,cost:null},
-    {id:uid(),name:"BMRI",type:"Saham",sym:"BMRI.JK",kind:"idr",units:1500,cost:null},
-    {id:uid(),name:"Bitcoin",type:"Crypto",sym:"BTC-USD",kind:"usd",units:0.02,cost:null},
-    {id:uid(),name:"Emas",type:"Emas",sym:"GC=F",kind:"gold",units:10,cost:null},
-    {id:uid(),name:"Reksadana Pasar Uang",type:"Reksadana",manual:true,units:5000,nav:1520,cost:7500000}];
-  return{tx,inv,goals:[
-    g("Tabungan Jalan-jalan",15e6,6.5e6,[{p:"Reksadana Pasar Uang",amt:4e6},{p:"Tabungan Digital",amt:2.5e6}],[1e6,1.5e6,2e6,2e6]),
-    g("Uang Darurat",36e6,21e6,[{p:"Emas Antam",amt:9e6},{p:"Reksadana Pasar Uang",amt:12e6}],[3e6,3e6,5e6,5e6,5e6]),
-    g("DP Rumah",150e6,42e6,[{p:"BBCA",amt:15e6},{p:"Reksadana Saham",amt:12e6},{p:"Deposito",amt:15e6}],[8e6,10e6,12e6,12e6]),
-    g("Laptop Baru",18e6,11e6,[{p:"Tabungan Digital",amt:11e6}],[3e6,4e6,4e6]),
-    g("Dana Pendidikan",60e6,9e6,[{p:"Reksadana Saham",amt:9e6}],[4e6,5e6])]};
+    {id:uid(),name:"BBCA",type:"Saham",sym:"BBCA.JK",kind:"idr",units:1000,cost:null,goal:gs[2].id},
+    {id:uid(),name:"BMRI",type:"Saham",sym:"BMRI.JK",kind:"idr",units:1500,cost:null,goal:gs[4].id},
+    {id:uid(),name:"Bitcoin",type:"Kripto",sym:"BTC-USD",kind:"usd",units:0.02,cost:null,goal:gs[3].id},
+    {id:uid(),name:"Emas",type:"Emas",sym:"GC=F",kind:"gold",units:10,cost:null,goal:gs[1].id},
+    {id:uid(),name:"Reksadana Pasar Uang",type:"Reksadana",manual:true,units:5000,nav:1520,cost:7500000,goal:gs[0].id}];
+  return{tx,inv,goals:gs,mm:{mode:"pri",amt:"",freq:"",bills:[],dreams:gs.map(g=>({id:g.id,name:g.name,target:g.target,saved:g.saved,months:12}))}};
 }
 const KEY="xav_v2";
-const load=()=>{try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.tx&&x.goals&&x.inv)return x}catch(e){}return sample()};
+const load=()=>{try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&x.tx&&x.goals&&x.inv){
+  x.tx.forEach(t=>{t.cat=OLD[t.cat]||t.cat});
+  x.goals.forEach(g=>{if(!GC[g.cat])g.cat=guess(g.name);delete g.alloc});
+  if(!x.mm)x.mm={mode:"pri",amt:"",freq:"",bills:[],dreams:x.goals.map(g=>({id:g.id,name:g.name,target:g.target,saved:g.saved||0,months:12}))};
+  x.inv.forEach(a=>{if(a.type==="Crypto")a.type="Kripto";if(a.goal===undefined)a.goal=null});
+  return x}}catch(e){}return sample()};
 const pr=(a,px)=>a.manual?a.units*a.nav:(px[a.sym]&&px[a.sym].price?a.units*px[a.sym].price:null);
 const val=(a,px)=>{const v=pr(a,px);return v==null?(a.cost||0):v};
+const gsum=(g,inv,px)=>g.saved+inv.reduce((t,a)=>t+(a.goal===g.id?val(a,px):0),0);
 const ser=(a,px)=>a.manual?null:(px[a.sym]&&px[a.sym].series)||null;
 const st=s=>s&&s.length>5?s[s.length-1]/s[s.length-6]-1:0;
 
 const Card=({className="",children,...p})=><div className={"bg-white rounded-2xl border border-slate-100 shadow-sm "+className} {...p}>{children}</div>;
 const Empty=({t})=><div className="py-10 text-center text-sm text-slate-400">{t}</div>;
 
+const Logo=({s=40})=><svg width={s} height={s} viewBox="0 0 40 40" aria-hidden="true" className="shrink-0"><rect width="40" height="40" rx="11" fill="#064e3b"/><path d="M11 12.5c5 3.2 8.4 8.2 12 15" stroke="#6ee7b7" strokeWidth="4.2" strokeLinecap="round" fill="none"/><path d="M12 29c4.6-3.4 9-9.4 14-17" stroke="#fff" strokeWidth="4.2" strokeLinecap="round" fill="none"/><circle cx="28.5" cy="10.5" r="3" fill="#fbbf24"/></svg>;
+function Count({v,f=rp}){
+  const [x,setX]=useState(0),ref=React.useRef(0);
+  useEffect(()=>{
+    const a=ref.current,b=v;
+    if(a===b){setX(b);return}
+    if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches){ref.current=b;setX(b);return}
+    let raf,t0;
+    const step=t=>{t0=t0||t;const p=Math.min(1,(t-t0)/700),e=1-Math.pow(1-p,3),cur=a+(b-a)*e;ref.current=cur;setX(cur);if(p<1)raf=requestAnimationFrame(step)};
+    raf=requestAnimationFrame(step);
+    return()=>cancelAnimationFrame(raf);
+  },[v]);
+  return <>{f(x)}</>;
+}
+const MoneyIn=({v,set,ph,rpx=true})=><div className="relative">{rpx&&<span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">Rp</span>}<input inputMode="numeric" className={inp+(rpx?" !pl-11":"")} value={fmtN(v)} onChange={e=>set(dig(e.target.value))} placeholder={ph}/></div>;
+const DecIn=({v,set,ph})=><input inputMode="decimal" className={inp} value={v} onChange={e=>set(e.target.value.replace(/[^\d.,]/g,""))} placeholder={ph}/>;
+function Cover({g,h=128,busy,children}){
+  const c=GC[g.cat]||GC.lainnya;
+  return <div className="relative overflow-hidden" style={{height:h,background:`linear-gradient(135deg,${c.a},${c.b})`}}>
+    {g.cover?<img src={g.cover} alt="" className="absolute inset-0 w-full h-full object-cover fade"/>:<>
+      <div className="absolute -right-6 -top-8 w-36 h-36 rounded-full bg-white/15 fl"/><div className="absolute left-8 -bottom-12 w-32 h-32 rounded-full bg-white/10 fl2"/>
+      <div className="absolute right-4 bottom-1 text-white/25"><I n={c.ic} s={Math.round(h*0.8)}/></div></>}
+    {busy&&<div className="absolute inset-0 shine"/>}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent"/>
+    <span className="absolute left-3 bottom-3 w-10 h-10 rounded-xl bg-white/90 flex items-center justify-center shadow" style={{color:c.b}}><I n={c.ic} s={22}/></span>
+    {children}
+  </div>;
+}
+function Confetti({k}){
+  const ps=useMemo(()=>Array.from({length:28},(_,i)=>{const a=Math.random()*Math.PI*2,r=120+Math.random()*180;return{x:Math.round(Math.cos(a)*r),y:Math.round(Math.sin(a)*r-80),r:Math.round(Math.random()*720-360),c:["#10b981","#fbbf24","#38bdf8","#fb7185","#a78bfa"][i%5],d:Math.round(Math.random()*120)}}),[k]);
+  return <div className="fixed inset-0 z-[70] pointer-events-none flex items-center justify-center" aria-hidden="true">{ps.map((p,i)=><i key={i} className="burst absolute w-2.5 h-3.5 rounded-sm" style={{"--x":p.x+"px","--y":p.y+"px","--r":p.r+"deg",background:p.c,animationDelay:p.d+"ms"}}/>)}</div>;
+}
+
+
 function Spark({data,color,h=36,w=110}){
   const mn=Math.min(...data),mx=Math.max(...data),sp=mx-mn||1;
   const pts=data.map((v,i)=>(i/(data.length-1)*w).toFixed(1)+","+(h-4-((v-mn)/sp)*(h-8)).toFixed(1)).join(" ");
-  return <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}><polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/></svg>;
+  return <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}><polyline points={pts} pathLength="1" className="draw" fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"/></svg>;
 }
 function Line({data,h=150}){
   const w=400,mn=Math.min(...data),mx=Math.max(...data),sp=mx-mn||1;
   const pts=data.map((v,i)=>[i/(data.length-1)*w,h-12-((v-mn)/sp)*(h-28)]);
   const l=pts.map(p=>p.join(",")).join(" ");
   return <svg viewBox={`0 0 ${w} ${h}`} className="w-full"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#059669" stopOpacity=".25"/><stop offset="1" stopColor="#059669" stopOpacity="0"/></linearGradient></defs>
-    <polygon points={`0,${h} ${l} ${w},${h}`} fill="url(#lg)"/><polyline points={l} fill="none" stroke="#059669" strokeWidth="2.5" strokeLinejoin="round"/>
-    <circle cx={pts[pts.length-1][0]-3} cy={pts[pts.length-1][1]} r="4" fill="#059669"/></svg>;
+    <polygon points={`0,${h} ${l} ${w},${h}`} fill="url(#lg)"/><polyline points={l} pathLength="1" className="draw" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinejoin="round"/>
+    <circle cx={pts[pts.length-1][0]-3} cy={pts[pts.length-1][1]} r="4" fill="#059669" className="fade" style={{animationDelay:"1s"}}/></svg>;
 }
 function Bars({b}){
   const mx=Math.max(1,...b.flatMap(x=>[x.inc,x.exp])),W=400,H=170,bw=W/b.length;
   return <svg viewBox={`0 0 ${W} ${H+22}`} className="w-full">
     {[0,.5,1].map(f=><line key={f} x1="0" x2={W} y1={H-f*(H-10)} y2={H-f*(H-10)} stroke="#f1f5f9"/>)}
     {b.map((x,i)=>{const cw=Math.min(14,bw/3),hi=x.inc/mx*(H-10),he=x.exp/mx*(H-10),cx=i*bw+bw/2;
-      return <g key={i}><rect x={cx-cw-1} y={H-hi} width={cw} height={hi} rx="3" fill="#059669"/><rect x={cx+1} y={H-he} width={cw} height={he} rx="3" fill="#a7f3d0"/>
+      return <g key={i}><rect x={cx-cw-1} y={H-hi} width={cw} height={hi} rx="3" fill="#059669" className="rise" style={{animationDelay:i*60+"ms"}}/><rect x={cx+1} y={H-he} width={cw} height={he} rx="3" fill="#a7f3d0" className="rise" style={{animationDelay:i*60+80+"ms"}}/>
       <text x={cx} y={H+15} textAnchor="middle" fontSize="10" fill="#94a3b8">{x.l}</text></g>})}
   </svg>;
 }
@@ -129,42 +216,50 @@ function Modal({title,onClose,children,wide}){
   useEffect(()=>{const k=e=>e.key==="Escape"&&onClose();addEventListener("keydown",k);return()=>removeEventListener("keydown",k)},[]);
   return <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm fade" onClick={onClose}/>
-    <div className={"relative bg-white w-full rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto pop "+(wide?"sm:max-w-lg":"sm:max-w-md")} role="dialog" aria-modal="true">
+    <div className={"relative bg-white w-full rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto overflow-x-hidden pop "+(wide?"sm:max-w-lg":"sm:max-w-md")} role="dialog" aria-modal="true">
       <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-bold">{title}</h3>
         <button onClick={onClose} aria-label="Tutup" className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center"><I n="x" s={18}/></button></div>
       {children}
     </div></div>;
 }
-const inp="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:bg-white focus:border-emerald-500";
-const Lbl=({t,children})=><label className="block mb-3"><span className="block text-xs font-semibold text-slate-500 mb-1.5">{t}</span>{children}</label>;
+const inp="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm min-h-[46px] focus:bg-white focus:border-emerald-500";
+const Lbl=({t,children})=><label className="block mb-3 min-w-0"><span className="block text-xs font-semibold text-slate-500 mb-1.5">{t}</span>{children}</label>;
 const Btn=({className="",...p})=><button {...p} className={"rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[.98] text-white font-semibold px-5 py-3 text-sm transition "+className}/>;
 
-function AddModal({kind,onClose,onSave}){
-  const [f,setF]=useState({type:"expense",amt:"",cat:"Food",note:"",date:iso(new Date()),name:"",target:"",saved:"",itype:"Saham",code:"",units:"",nav:""});
-  const [err,setErr]=useState("");
+function AddModal({kind,goals,onClose,onSave}){
+  const [f,setF]=useState({type:"expense",amt:"",cat:"Makanan",note:"",date:iso(new Date()),name:"",target:"",saved:"",gcat:"lainnya",itype:"Saham",code:"",units:"",nav:"",goal:""});
+  const [err,setErr]=useState(""),[manual,setManual]=useState(false);
   const u=(k,v)=>setF(s=>({...s,[k]:v}));
-  const num=v=>Number(String(v).replace(/[^\d]/g,""));
+  const setName=v=>setF(s=>({...s,name:v,gcat:manual?s.gcat:guess(v)}));
   const submit=()=>{
     if(kind==="tx"){if(!num(f.amt))return setErr("Isi nominal lebih dari 0.");onSave({id:uid(),type:f.type,amt:num(f.amt),cat:f.cat,note:f.note.trim(),date:f.date||iso(new Date())})}
-    if(kind==="goal"){if(!f.name.trim())return setErr("Isi nama goal.");if(!num(f.target))return setErr("Isi target dana.");onSave({id:uid(),name:f.name.trim(),target:num(f.target),saved:num(f.saved),alloc:[],hist:num(f.saved)?[{d:iso(new Date()),amt:num(f.saved)}]:[]})}
-    if(kind==="inv"){const un=Number(String(f.units).replace(",","."));if(!un||un<=0)return setErr("Isi jumlah dengan benar.");
-      if(f.itype==="Reksadana"){if(!f.name.trim())return setErr("Isi nama reksadana.");if(!num(f.nav))return setErr("Isi NAV per unit.");onSave({id:uid(),name:f.name.trim(),type:"Reksadana",manual:true,units:un,nav:num(f.nav),cost:num(f.amt)||Math.round(un*num(f.nav))})}
+    else if(kind==="goal"){const nm=f.name.trim();if(!nm)return setErr("Isi nama tujuan.");if(!num(f.target))return setErr("Isi target dana.");const sv=num(f.saved);
+      onSave({id:uid(),name:nm,cat:f.gcat,target:num(f.target),saved:sv,hist:sv?[{d:iso(new Date()),amt:sv}]:[]})}
+    else{const un=f.itype==="Saham"?num(f.units):dec(f.units);if(!(un>0))return setErr("Isi jumlah dengan benar.");const goal=f.goal||null;
+      if(f.itype==="Reksadana"){if(!f.name.trim())return setErr("Isi nama reksadana.");if(!num(f.nav))return setErr("Isi NAV per unit.");onSave({id:uid(),name:f.name.trim(),type:"Reksadana",manual:true,units:un,nav:num(f.nav),cost:num(f.amt)||Math.round(un*num(f.nav)),goal})}
       else{const c=f.code.trim().toUpperCase();if(f.itype!=="Emas"&&!/^[A-Z0-9.-]{1,12}$/.test(c))return setErr("Isi kode aset yang valid.");
-        const sp=f.itype==="Saham"?{sym:c.replace(/\.JK$/,"")+".JK",kind:"idr"}:f.itype==="Crypto"?{sym:c.replace(/-USD$/,"")+"-USD",kind:"usd"}:{sym:"GC=F",kind:"gold"};
-        onSave({id:uid(),name:f.name.trim()||(f.itype==="Emas"?"Emas":c),type:f.itype,...sp,units:un,cost:num(f.amt)||null})}}
+        const sp=f.itype==="Saham"?{sym:c.replace(/\.JK$/,"")+".JK",kind:"idr"}:f.itype==="Kripto"?{sym:c.replace(/-USD$/,"")+"-USD",kind:"usd"}:{sym:"GC=F",kind:"gold"};
+        onSave({id:uid(),name:f.name.trim()||(f.itype==="Emas"?"Emas":c),type:f.itype,...sp,units:un,cost:num(f.amt)||null,goal})}}
     onClose();
   };
-  const T={tx:"Tambah transaksi",goal:"Tambah goal",inv:"Tambah investasi"}[kind];
+  const T={tx:"Tambah transaksi",goal:"Tambah tujuan",inv:"Tambah investasi"}[kind];
   return <Modal title={T} onClose={onClose}>
-    {kind==="tx"&&<div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-4">{["expense","income"].map(t=><button key={t} onClick={()=>{u("type",t);u("cat",t==="income"?"Salary":"Food")}} className={"py-2.5 rounded-lg text-sm font-semibold transition "+(f.type===t?"bg-white shadow text-emerald-700":"text-slate-500")}>{t==="income"?"Pemasukan":"Pengeluaran"}</button>)}</div>}
-    {kind!=="tx"&&<Lbl t={kind==="goal"?"Nama goal":(f.itype==="Reksadana"?"Nama reksadana":"Nama (opsional)")}><input className={inp} value={f.name} onChange={e=>u("name",e.target.value)} placeholder={kind==="goal"?"Contoh: Motor baru":"Contoh: TLKM"}/></Lbl>}
-    {kind==="inv"&&<Lbl t="Jenis aset"><select className={inp} value={f.itype} onChange={e=>u("itype",e.target.value)}>{ITYPE.map(x=><option key={x}>{x}</option>)}</select></Lbl>}
-    {kind==="inv"&&(f.itype==="Saham"||f.itype==="Crypto")&&<Lbl t={f.itype==="Saham"?"Kode saham (contoh: BBCA)":"Kode crypto (contoh: BTC)"}><input className={inp} value={f.code} onChange={e=>u("code",e.target.value)}/></Lbl>}
-    {kind==="inv"&&<Lbl t={f.itype==="Emas"?"Berat (gram)":f.itype==="Saham"?"Jumlah lembar":"Jumlah unit"}><input inputMode="decimal" className={inp} value={f.units} onChange={e=>u("units",e.target.value)}/></Lbl>}
-    {kind==="inv"&&f.itype==="Reksadana"&&<Lbl t="NAV per unit (Rp, isi manual)"><input inputMode="numeric" className={inp} value={f.nav} onChange={e=>u("nav",e.target.value)}/></Lbl>}
-    {kind==="goal"&&<Lbl t="Target dana (Rp)"><input inputMode="numeric" className={inp} value={f.target} onChange={e=>u("target",e.target.value)} placeholder="10000000"/></Lbl>}
-    {kind==="goal"&&<Lbl t="Dana awal (opsional)"><input inputMode="numeric" className={inp} value={f.saved} onChange={e=>u("saved",e.target.value)} placeholder="0"/></Lbl>}
-    {kind!=="goal"&&<Lbl t={kind==="inv"?"Modal total (Rp, opsional)":"Nominal (Rp)"}><input inputMode="numeric" className={inp} value={f.amt} onChange={e=>u("amt",e.target.value)} placeholder="50000"/></Lbl>}
+    {kind==="tx"&&<div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl mb-4">{["expense","income"].map(t=><button key={t} onClick={()=>{u("type",t);u("cat",t==="income"?"Gaji":"Makanan")}} className={"py-2.5 rounded-lg text-sm font-semibold transition "+(f.type===t?"bg-white shadow text-emerald-700":"text-slate-500")}>{t==="income"?"Pemasukan":"Pengeluaran"}</button>)}</div>}
+    {kind!=="tx"&&<Lbl t={kind==="goal"?"Nama tujuan":(f.itype==="Reksadana"?"Nama reksadana":"Nama (opsional)")}><input className={inp} value={f.name} onChange={e=>kind==="goal"?setName(e.target.value):u("name",e.target.value)} placeholder={kind==="goal"?"Contoh: Motor baru":"Contoh: TLKM"}/></Lbl>}
+    {kind==="goal"&&<div className="mb-3"><span className="block text-xs font-semibold text-slate-500 mb-1.5">Jenis tujuan</span>
+      <div className="grid grid-cols-5 gap-1.5">{Object.entries(GC).map(([k,c])=><button type="button" key={k} onClick={()=>{setManual(true);u("gcat",k)}} className={"flex flex-col items-center gap-1 rounded-xl p-1.5 transition active:scale-95 "+(f.gcat===k?"bg-emerald-50 ring-2 ring-emerald-500":"hover:bg-slate-50")}>
+        <span className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{background:`linear-gradient(135deg,${c.a},${c.b})`}}><I n={c.ic} s={20}/></span>
+        <span className="text-[10px] font-semibold text-slate-600 leading-tight text-center w-full truncate">{c.l.split(" / ")[0]}</span></button>)}</div>
+      <p className="text-[11px] text-slate-400 mt-1.5">Ikon mengikuti nama tujuan. Gambar sampul dibuat otomatis oleh AI.</p></div>}
+    {kind==="inv"&&<Lbl t="Jenis aset"><select className={inp} value={f.itype} onChange={e=>setF(s=>({...s,itype:e.target.value,units:""}))}>{ITYPE.map(x=><option key={x}>{x}</option>)}</select></Lbl>}
+    {kind==="inv"&&(f.itype==="Saham"||f.itype==="Kripto")&&<Lbl t={f.itype==="Saham"?"Kode saham (contoh: BBCA)":"Kode kripto (contoh: BTC)"}><input className={inp} value={f.code} onChange={e=>u("code",e.target.value)}/></Lbl>}
+    {kind==="inv"&&<Lbl t={f.itype==="Emas"?"Berat (gram)":f.itype==="Saham"?"Jumlah lembar":"Jumlah unit"}>{f.itype==="Saham"?<MoneyIn rpx={false} v={f.units} set={v=>u("units",v)} ph="100"/>:<DecIn v={f.units} set={v=>u("units",v)} ph="0,5"/>}</Lbl>}
+    {kind==="inv"&&f.itype==="Reksadana"&&<Lbl t="NAV per unit (isi manual)"><MoneyIn v={f.nav} set={v=>u("nav",v)} ph="1.500"/></Lbl>}
+    {kind==="goal"&&<Lbl t="Target dana"><MoneyIn v={f.target} set={v=>u("target",v)} ph="10.000.000"/></Lbl>}
+    {kind==="goal"&&<Lbl t="Dana awal (opsional)"><MoneyIn v={f.saved} set={v=>u("saved",v)} ph="0"/></Lbl>}
+    {kind!=="goal"&&<Lbl t={kind==="inv"?"Modal total (opsional)":"Nominal"}><MoneyIn v={f.amt} set={v=>u("amt",v)} ph="50.000"/></Lbl>}
+    {kind==="inv"&&<Lbl t="Untuk tujuan (opsional)"><select className={inp} value={f.goal} onChange={e=>u("goal",e.target.value)}><option value="">Tanpa tujuan</option>{goals.map(g=><option key={g.id} value={g.id}>{g.name}</option>)}</select>
+      <span className="block text-[11px] text-slate-400 mt-1">{goals.length?(f.goal?"Nilai aset ini ikut dihitung ke progres tujuan.":"Pilih tujuan agar jelas investasi ini untuk apa."):"Belum ada tujuan. Buat dulu di tab Manager."}</span></Lbl>}
     {kind==="tx"&&<><Lbl t="Kategori"><select className={inp} value={f.cat} onChange={e=>u("cat",e.target.value)}>{(f.type==="income"?INC:EXP).map(x=><option key={x}>{x}</option>)}</select></Lbl>
       <Lbl t="Catatan"><input className={inp} value={f.note} onChange={e=>u("note",e.target.value)} placeholder="Opsional"/></Lbl>
       <Lbl t="Tanggal"><input type="date" className={inp} value={f.date} onChange={e=>u("date",e.target.value)}/></Lbl></>}
@@ -173,22 +268,28 @@ function AddModal({kind,onClose,onSave}){
   </Modal>;
 }
 
-function GoalModal({g,onClose,onAdd,onDel}){
-  const [a,setA]=useState("");const pc=Math.min(100,g.saved/g.target*100);
-  const add=()=>{const n=Number(a.replace(/[^\d]/g,""));if(!n)return;onAdd(g.id,n);setA("")};
+function GoalModal({g,inv,px,busy,onClose,onAdd,onDel,onGen}){
+  const [a,setA]=useState("");
+  const linked=inv.filter(x=>x.goal===g.id),lv=linked.reduce((s,x)=>s+val(x,px),0),sv=g.saved+lv;
+  const pc=Math.min(100,sv/g.target*100),c=GC[g.cat]||GC.lainnya;
+  const add=()=>{const n=num(a);if(!n)return;onAdd(g.id,n);setA("")};
   return <Modal title={g.name} onClose={onClose} wide>
+    <div className="rounded-2xl overflow-hidden mb-4"><Cover g={g} h={150} busy={busy}/></div>
     <div className="rounded-2xl bg-emerald-50 p-4 mb-5">
-      <div className="flex items-end justify-between mb-2"><p className="text-2xl font-extrabold text-emerald-800">{pc.toFixed(0)}%</p><p className="text-xs text-emerald-700">{rp(g.saved)} dari {rp(g.target)}</p></div>
-      <div className="h-2.5 rounded-full bg-emerald-100 overflow-hidden"><div className="bar h-full rounded-full bg-emerald-600" style={{width:pc+"%"}}/></div>
-      <p className="text-xs text-emerald-700 mt-2">{g.saved>=g.target?"Target tercapai.":"Kurang "+rp(g.target-g.saved)}</p>
+      <div className="flex items-end justify-between mb-2"><p className="text-2xl font-extrabold text-emerald-800">{pc.toFixed(0)}%</p><p className="text-xs text-emerald-700">{rp(sv)} dari {rp(g.target)}</p></div>
+      <div className="h-2.5 rounded-full bg-emerald-100 overflow-hidden"><div className="bar h-full rounded-full" style={{width:pc+"%",background:`linear-gradient(90deg,${c.a},${c.b})`}}/></div>
+      <p className="text-xs text-emerald-700 mt-2">{sv>=g.target?"Target tercapai.":"Kurang "+rp(g.target-sv)}</p>
+      <p className="text-[11px] text-emerald-700/80 mt-1">Tabungan {rp(g.saved)} + investasi {rp(lv)}</p>
     </div>
-    <p className="text-sm font-bold mb-2">Alokasi dana</p>
-    {g.alloc.length?<div className="mb-5 space-y-2">{g.alloc.map((x,i)=><div key={i} className="flex justify-between text-sm bg-slate-50 rounded-xl px-4 py-3"><span className="font-medium">{x.p}</span><span className="text-slate-600">{rp(x.amt)}</span></div>)}</div>:<p className="text-sm text-slate-400 mb-5">Belum ada alokasi produk. Dana disimpan sebagai tabungan biasa.</p>}
+    <p className="text-sm font-bold mb-2">Investasi untuk tujuan ini</p>
+    {linked.length?<div className="mb-5 space-y-2">{linked.map(x=><div key={x.id} className="flex justify-between text-sm bg-slate-50 rounded-xl px-4 py-3"><span className="font-medium">{x.name} <span className="text-xs text-slate-400">{x.type}</span></span><span className="text-slate-600">{rp(val(x,px))}</span></div>)}</div>:<p className="text-sm text-slate-400 mb-5">Belum ada investasi. Saat menambah aset di tab Investasi, pilih tujuan ini.</p>}
     <p className="text-sm font-bold mb-2">Tambah tabungan</p>
-    <div className="flex gap-2 mb-5"><input inputMode="numeric" className={inp} placeholder="Nominal (Rp)" value={a} onChange={e=>setA(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/><Btn onClick={add}>Tambah</Btn></div>
+    <div className="flex gap-2 mb-5"><div className="flex-1 min-w-0"><MoneyIn v={a} set={setA} ph="500.000"/></div><Btn onClick={add}>Tambah</Btn></div>
     <p className="text-sm font-bold mb-1">Histori tabungan</p>
     {g.hist.length?<div className="divide-y divide-slate-100">{g.hist.map((h,i)=><div key={i} className="flex justify-between py-2.5 text-sm"><span className="text-slate-500">{fd(h.d)}</span><span className="font-semibold text-emerald-600">+{rp(h.amt)}</span></div>)}</div>:<Empty t="Belum ada setoran."/>}
-    <button onClick={()=>{if(confirm("Hapus goal ini?")){onDel(g.id);onClose()}}} className="mt-4 flex items-center gap-2 text-sm text-red-500 hover:text-red-700"><I n="trash" s={16}/>Hapus goal</button>
+    <div className="mt-4 flex items-center justify-between gap-3">
+      <button onClick={()=>onGen(g)} disabled={busy} className="flex items-center gap-2 text-sm font-semibold text-emerald-700 disabled:opacity-50"><I n="sparkles" s={16}/>{busy?"Membuat gambar...":(g.cover?"Buat ulang gambar AI":"Buat gambar AI")}</button>
+      <button onClick={()=>{if(confirm("Hapus tujuan ini?")){onDel(g.id);onClose()}}} className="flex items-center gap-2 text-sm text-red-500 hover:text-red-700"><I n="trash" s={16}/>Hapus</button></div>
   </Modal>;
 }
 
@@ -196,25 +297,25 @@ function Home({d,setTab,open,fresh,reset,clear}){
   const bal=d.tx.reduce((s,t)=>s+(t.type==="income"?t.amt:-t.amt),0);
   const m=iso(new Date()).slice(0,7),mt=d.tx.filter(t=>t.date.startsWith(m));
   const inc=mt.filter(t=>t.type==="income").reduce((s,t)=>s+t.amt,0),exp=mt.filter(t=>t.type==="expense").reduce((s,t)=>s+t.amt,0);
-  const rec=[...d.tx].sort((a,b)=>b.date.localeCompare(a.date)||0).slice(0,6);
-  const qa=[["+ Transaksi","plus",()=>open("tx")],["+ Goal","target",()=>open("goal")],["+ Invest","trend",()=>open("inv")]];
-  return <div className="pg space-y-5">
+  const rec=[...d.tx].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+  const qa=[["Transaksi","plus",()=>open("tx")],["Manager","wallet",()=>setTab("manager")],["Investasi","trend",()=>open("inv")]];
+  return <div className="st space-y-5">
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-800 text-white p-6 sm:p-8 shadow-xl shadow-emerald-600/20">
-      <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10"/><div className="absolute right-16 -bottom-16 w-44 h-44 rounded-full bg-white/10"/>
+      <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full bg-white/10 fl"/><div className="absolute right-16 -bottom-16 w-44 h-44 rounded-full bg-white/10 fl2"/>
       <div className="relative"><p className="text-sm text-emerald-100 flex items-center gap-2"><I n="wallet" s={16}/>Total saldo</p>
-      <p className="text-3xl sm:text-4xl font-extrabold mt-2 tracking-tight">{rp(bal)}</p>
+      <p className="text-3xl sm:text-4xl font-extrabold mt-2 tracking-tight"><Count v={bal}/></p>
       <div className="flex gap-3 mt-6">
-        <div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-xs text-emerald-100 flex items-center gap-1"><I n="down" s={14}/>Masuk bulan ini</p><p className="font-bold mt-1 text-sm sm:text-base">{rp(inc)}</p></div>
-        <div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-xs text-emerald-100 flex items-center gap-1"><I n="up" s={14}/>Keluar bulan ini</p><p className="font-bold mt-1 text-sm sm:text-base">{rp(exp)}</p></div>
+        <div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-xs text-emerald-100 flex items-center gap-1"><I n="down" s={14}/>Masuk bulan ini</p><p className="font-bold mt-1 text-sm sm:text-base"><Count v={inc}/></p></div>
+        <div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-xs text-emerald-100 flex items-center gap-1"><I n="up" s={14}/>Keluar bulan ini</p><p className="font-bold mt-1 text-sm sm:text-base"><Count v={exp}/></p></div>
       </div></div>
     </div>
-    <div className="grid grid-cols-3 gap-3">{qa.map(([l,ic,fn])=><button key={l} onClick={fn} className="bg-white border border-slate-100 shadow-sm rounded-2xl py-4 flex flex-col items-center gap-2 hover:border-emerald-300 hover:bg-emerald-50 active:scale-95 transition"><span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center"><I n={ic}/></span><span className="text-xs sm:text-sm font-semibold">{l}</span></button>)}</div>
+    <div className="grid grid-cols-3 gap-3">{qa.map(([l,ic,fn])=><button key={l} onClick={fn} className="lift bg-white border border-slate-100 shadow-sm rounded-2xl py-4 flex flex-col items-center gap-2 hover:border-emerald-300"><span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center"><I n={ic}/></span><span className="text-xs sm:text-sm font-semibold">{l}</span></button>)}</div>
     <Card className="p-5"><div className="flex items-center justify-between mb-1"><h2 className="font-bold">Ringkasan bulan ini</h2><span className="text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-full px-3 py-1">{inc>0?Math.max(0,Math.round((inc-exp)/inc*100)):0}% ditabung</span></div>
       <p className="text-sm text-slate-500">{inc-exp>=0?"Surplus ":"Defisit "}<b className={inc-exp>=0?"text-emerald-600":"text-red-500"}>{rp(Math.abs(inc-exp))}</b> dari {mt.length} transaksi.</p></Card>
     <Card className="p-5"><div className="flex items-center justify-between mb-1"><h2 className="font-bold">Transaksi terakhir</h2><button onClick={()=>setTab("analytics")} className="text-sm font-semibold text-emerald-600">Lihat analitik</button></div>
-      {rec.length?<div className="divide-y divide-slate-100">{rec.map(t=><TxRow key={t.id} t={t} fresh={t.id===fresh}/>)}</div>:<Empty t="Belum ada transaksi. Tekan + Transaksi untuk mulai."/>}</Card>
+      {rec.length?<div className="divide-y divide-slate-100">{rec.map(t=><TxRow key={t.id} t={t} fresh={t.id===fresh}/>)}</div>:<Empty t="Belum ada transaksi. Tekan tombol Transaksi untuk mulai."/>}</Card>
     <div className="flex flex-wrap gap-2 justify-center pt-1">
-      <button onClick={reset} className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-emerald-700 bg-white border border-slate-200 rounded-full px-4 py-2"><I n="reset" s={14}/>Load sample data</button>
+      <button onClick={reset} className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-emerald-700 bg-white border border-slate-200 rounded-full px-4 py-2"><I n="reset" s={14}/>Muat data contoh</button>
       <button onClick={clear} className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-red-600 bg-white border border-slate-200 rounded-full px-4 py-2"><I n="trash" s={14}/>Kosongkan data</button></div>
   </div>;
 }
@@ -229,30 +330,39 @@ function Analytics({d}){
     d.tx.forEach(t=>{let i;const df=diffD(t.date);if(df<0)return;
       if(r==="week")i=6-df;else if(r==="month")i=3-Math.floor(df/7);else{const dt=new Date(t.date+"T00:00:00");i=11-((now.getFullYear()-dt.getFullYear())*12+now.getMonth()-dt.getMonth())}
       if(i<0||i>=N)return;
-      if(t.type==="income")b[i].inc+=t.amt;else{b[i].exp+=t.amt;cat[t.cat]=(cat[t.cat]||0)+t.amt}});
+      if(t.type==="income")b[i].inc+=t.amt;else if(t.type==="expense"){b[i].exp+=t.amt;cat[t.cat]=(cat[t.cat]||0)+t.amt}});
     const items=Object.entries(cat).sort((a,c)=>c[1]-a[1]);
     return{b,items,total:items.reduce((s,x)=>s+x[1],0),ti:b.reduce((s,x)=>s+x.inc,0),te:b.reduce((s,x)=>s+x.exp,0)};
   },[d.tx,r]);
-  return <div className="pg space-y-5">
+  return <div className="st space-y-5">
     <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-2xl">{[["week","Mingguan"],["month","Bulanan"],["year","Tahunan"]].map(([k,l])=><button key={k} onClick={()=>setR(k)} className={"py-2.5 rounded-xl text-sm font-semibold transition "+(r===k?"bg-white shadow text-emerald-700":"text-slate-500")}>{l}</button>)}</div>
     <Card className="p-5"><h2 className="font-bold mb-1">Pemasukan vs pengeluaran</h2>
       <div className="flex gap-4 text-xs text-slate-500 mb-3"><span className="flex items-center gap-1.5"><i className="w-2.5 h-2.5 rounded bg-emerald-600"/>Masuk {sh(ti)}</span><span className="flex items-center gap-1.5"><i className="w-2.5 h-2.5 rounded bg-emerald-200"/>Keluar {sh(te)}</span></div>
-      <Bars b={b}/></Card>
+      <Bars key={r} b={b}/></Card>
     <Card className="p-5"><h2 className="font-bold mb-4 flex items-center gap-2"><I n="pie" s={18} c="text-emerald-600"/>Rincian pengeluaran</h2>
       {total?<div className="flex flex-col sm:flex-row items-center gap-6"><div className="relative"><Donut items={items} total={total}/><div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-xs text-slate-400">Total</span><span className="font-extrabold">{sh(total)}</span></div></div>
         <div className="w-full space-y-2.5">{items.map(([c,v])=><div key={c} className="flex items-center gap-3 text-sm"><i className="w-3 h-3 rounded-full shrink-0" style={{background:CAT[c]}}/><span className="flex-1 font-medium">{c}</span><span className="text-slate-400">{Math.round(v/total*100)}%</span><span className="font-semibold w-20 text-right">{sh(v)}</span></div>)}</div></div>:<Empty t="Belum ada pengeluaran di periode ini."/>}</Card>
   </div>;
 }
 
-function Goals({d,open,pick}){
-  return <div className="pg space-y-4">
-    <div className="flex items-center justify-between"><p className="text-sm text-slate-500">{d.goals.length} goal aktif</p><Btn onClick={()=>open("goal")} className="!py-2.5 flex items-center gap-1.5"><I n="plus" s={16}/>Goal baru</Btn></div>
-    {d.goals.length?<div className="grid sm:grid-cols-2 gap-4">{d.goals.map(g=>{const pc=Math.min(100,g.saved/g.target*100);
-      return <button key={g.id} onClick={()=>pick(g.id)} className="text-left bg-white rounded-2xl border border-slate-100 shadow-sm p-5 hover:border-emerald-300 hover:shadow-md active:scale-[.99] transition">
-        <div className="flex items-center gap-3 mb-4"><span className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">{pc>=100?<I n="check"/>:<I n="target"/>}</span>
-          <div className="flex-1 min-w-0"><p className="font-bold truncate">{g.name}</p><p className="text-xs text-slate-400">Target {rp(g.target)}</p></div><span className="font-extrabold text-emerald-700">{pc.toFixed(0)}%</span></div>
-        <div className="h-2 rounded-full bg-slate-100 overflow-hidden"><div className="bar h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700" style={{width:pc+"%"}}/></div>
-        <p className="text-xs text-slate-500 mt-2">Terkumpul {rp(g.saved)}</p></button>})}</div>:<Card><Empty t="Belum ada goal. Buat goal pertama kamu."/></Card>}
+function Goals({d,px,open,pick,busyId}){
+  const rows=d.goals.map(g=>({g,sv:gsum(g,d.inv,px)}));
+  const T=rows.reduce((s,r)=>s+r.g.target,0),S=rows.reduce((s,r)=>s+Math.min(r.sv,r.g.target),0),tp=T?S/T*100:0;
+  return <div className="st space-y-4">
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-700 to-emerald-950 text-white p-6 pb-20 sm:pb-24 shadow-xl shadow-emerald-900/20">
+      <div className="absolute right-8 top-6 w-12 h-12 rounded-full bg-amber-300/90 fl"/>
+      <svg viewBox="0 0 400 120" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 w-full h-20 sm:h-24" aria-hidden="true"><path d="M0 120V80l60-40 50 35 70-55 80 70 50-30 90 55v5z" fill="#065f46" opacity=".6"/><path d="M0 120V95l70-30 60 28 80-45 90 60 100-35v47z" fill="#022c22" opacity=".75"/></svg>
+      <div className="relative"><p className="text-sm text-emerald-100">Wujudkan tujuanmu</p>
+        <p className="text-2xl sm:text-3xl font-extrabold mt-1 leading-tight max-w-[14rem] sm:max-w-sm">Satu langkah kecil setiap hari.</p>
+        <p className="text-xs text-emerald-100/90 mt-3">{d.goals.length} tujuan aktif, terkumpul {rp(S)} dari {rp(T)} ({tp.toFixed(0)}%)</p></div>
+    </div>
+    <div className="flex items-center justify-between"><h2 className="font-bold">Tujuanku</h2><Btn onClick={()=>open("goal")} className="!py-2.5 flex items-center gap-1.5"><I n="plus" s={16}/>Tujuan baru</Btn></div>
+    {d.goals.length?<div className="grid sm:grid-cols-2 gap-4">{rows.map(({g,sv},i)=>{const pc=Math.min(100,sv/g.target*100),c=GC[g.cat]||GC.lainnya;
+      return <button key={g.id} onClick={()=>pick(g.id)} style={{animationDelay:i*60+"ms"}} className="pgb lift text-left bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <Cover g={g} busy={busyId===g.id}><span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-extrabold text-emerald-700">{pc>=100&&<I n="check" s={12}/>}{pc.toFixed(0)}%</span></Cover>
+        <div className="p-4"><p className="font-bold truncate">{g.name}</p><p className="text-xs text-slate-400">{c.l} - Target {rp(g.target)}</p>
+          <div className="h-2 rounded-full bg-slate-100 overflow-hidden mt-3"><div className="bar h-full rounded-full" style={{width:pc+"%",background:`linear-gradient(90deg,${c.a},${c.b})`}}/></div>
+          <p className="text-xs text-slate-500 mt-2">Terkumpul {rp(sv)}</p></div></button>})}</div>:<Card><Empty t="Belum ada tujuan. Buat tujuan pertama kamu."/></Card>}
   </div>;
 }
 
@@ -271,14 +381,15 @@ function Invest({d,px,refresh,pxt,pxe,open,del}){
       setAi({...j,time:new Date().toLocaleTimeString("id-ID")})}catch(e){setErr("Gagal: "+e.message)}
     setBusy(false)};
   const rec=s=>{const x=st(s);return x>=0?(x>.03?"Momentum kuat. Tahan posisi, tambah bertahap (DCA) bila perlu.":"Tren naik tipis. Pertahankan posisi dan pantau."):(x<-.03?"Tekanan turun cukup dalam. Tunda tambah posisi sampai stabil.":"Tren melemah ringan. Tahan dan pantau.")};
+  const gn=id=>(d.mm.dreams.find(x=>x.id===id)||{}).name;
   const unit=a=>a.units+(a.type==="Emas"?" g":a.type==="Saham"?" lbr":" unit");
-  return <div className="pg space-y-5">
-    <Card className="p-5"><div className="flex items-start justify-between"><div><p className="text-sm text-slate-500">Nilai portofolio</p><p className="text-3xl font-extrabold tracking-tight mt-1">{rp(tot)}</p></div>
+  return <div className="st space-y-5">
+    <Card className="p-5"><div className="flex items-start justify-between"><div><p className="text-sm text-slate-500">Nilai portofolio</p><p className="text-3xl font-extrabold tracking-tight mt-1"><Count v={tot}/></p></div>
       <button onClick={refresh} className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-full px-3 py-2"><I n="reset" s={14}/>Perbarui</button></div>
       <p className={"text-sm font-semibold mt-1 flex items-center gap-1 "+(pl>=0?"text-emerald-600":"text-red-500")}><I n={pl>=0?"up":"down"} s={16}/>{rp(pl)} ({cost?(pl/cost*100).toFixed(2):"0.00"}%)</p>
       {line?<div className="mt-3"><Line data={line}/></div>:<Empty t="Grafik muncul setelah data harga dimuat."/>}
       <p className="text-[11px] text-slate-400 mt-2">{pxe?pxe:(pxt?"Harga dari Yahoo Finance, diperbarui "+new Date(pxt).toLocaleTimeString("id-ID")+". Data saham bisa tertunda.":"Memuat harga...")}</p></Card>
-    <Card className="p-5"><div className="flex items-center gap-2 mb-1"><span className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center"><I n="zap" s={18}/></span><div><h2 className="font-bold leading-tight">AI market status</h2><p className="text-xs text-slate-400">Tren dari harga asli. Bukan saran investasi.</p></div></div>
+    <Card className="p-5"><div className="flex items-center gap-2 mb-1"><span className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center"><I n="zap" s={18}/></span><div><h2 className="font-bold leading-tight">Status pasar AI</h2><p className="text-xs text-slate-400">Tren dari harga asli. Bukan saran investasi.</p></div></div>
       <div className="my-3 rounded-xl bg-emerald-50 p-3">
         <Btn onClick={analyze} disabled={busy||!d.inv.length} className="w-full !py-2 disabled:opacity-60">{busy?"Menganalisis...":"Analisis dengan Gemini"}</Btn>
         {err&&<p className="text-xs text-red-600 mt-2" role="alert">{err}</p>}
@@ -288,67 +399,173 @@ function Invest({d,px,refresh,pxt,pxe,open,del}){
         <div className="flex items-center gap-3"><div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{a.name}</p>
           {a.manual?<span className="inline-flex text-xs font-semibold rounded-full px-2.5 py-1 mt-1 bg-slate-100 text-slate-500">Manual, tanpa data tren</span>
           :s?<span className={"inline-flex items-center gap-1.5 text-xs font-bold rounded-full px-2.5 py-1 mt-1 "+(bull?"bg-emerald-50 text-emerald-700":"bg-red-50 text-red-600")}><i className={"w-1.5 h-1.5 rounded-full "+(bull?"bg-emerald-500":"bg-red-500")}/>{bull?"Bullish":"Bearish"} {(x*100).toFixed(1)}% / 5 hari</span>
-          :<span className="inline-flex text-xs font-semibold rounded-full px-2.5 py-1 mt-1 bg-amber-50 text-amber-700">{p&&p.error?"Gagal: "+p.error:"Memuat harga..."}</span>}</div>
+          :<span className="inline-flex text-xs font-semibold rounded-full px-2.5 py-1 mt-1 bg-amber-50 text-amber-700">{p&&p.error?"Gagal: "+p.error:(pxe?"Harga belum tersedia":"Memuat harga...")}</span>}</div>
           {s&&<Spark data={s} color={bull?"#059669":"#ef4444"}/>}</div>
         {s&&<p className="text-xs text-slate-500 mt-2">{rec(s)}</p>}
         {(()=>{const it=ai&&ai.items&&ai.items.find(i=>i.name===a.name);return it?<p className="text-xs text-emerald-800 bg-emerald-50 rounded-lg px-3 py-2 mt-2"><b>Gemini: {it.status}.</b> {it.summary} {it.action}</p>:null})()}</div>})}</div>:<Empty t="Tambahkan aset untuk melihat status pasar."/>}</Card>
     <div className="flex items-center justify-between"><h2 className="font-bold">Aset investasi</h2><Btn onClick={()=>open("inv")} className="!py-2.5 flex items-center gap-1.5"><I n="plus" s={16}/>Aset</Btn></div>
-    {d.inv.length?<div className="grid sm:grid-cols-2 gap-3">{rows.map(({a,v})=>{const c=a.cost||v,p=v-c;return <Card key={a.id} className="p-4 flex items-center gap-3">
-      <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><I n={a.type==="Emas"?"wallet":a.type==="Crypto"?"zap":a.type==="Saham"?"trend":"pie"}/></div>
-      <div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{a.name}</p><p className="text-xs text-slate-400">{a.type} - {unit(a)}</p></div>
+    {d.inv.length?<div className="grid sm:grid-cols-2 gap-3">{rows.map(({a,v})=>{const c=a.cost||v,p=v-c;return <Card key={a.id} className="lift p-4 flex items-center gap-3">
+      <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><I n={a.type==="Emas"?"wallet":a.type==="Kripto"?"zap":a.type==="Saham"?"trend":"pie"}/></div>
+      <div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{a.name}</p><p className="text-xs text-slate-400">{a.type} - {unit(a)}</p>{gn(a.goal)&&<p className="text-[11px] font-semibold text-emerald-700 truncate mt-0.5">Untuk: {gn(a.goal)}</p>}</div>
       <div className="text-right"><p className="font-bold text-sm">{rp(v)}</p><p className={"text-xs font-semibold "+(p>=0?"text-emerald-600":"text-red-500")}>{p>=0?"+":""}{sh(p)}</p></div>
       <button onClick={()=>confirm("Hapus aset ini?")&&del(a.id)} aria-label="Hapus aset" className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></Card>})}</div>:<Card><Empty t="Belum ada aset investasi."/></Card>}
   </div>;
 }
 
+const HC={slate:"bg-slate-100 text-slate-600",red:"bg-red-50 text-red-600",amber:"bg-amber-50 text-amber-700",emerald:"bg-emerald-50 text-emerald-700"};
+function AllocChart({v}){
+  const r=React.useRef(),c=React.useRef();
+  useEffect(()=>{if(!window.Chart||!r.current)return;if(c.current)c.current.destroy();
+    c.current=new Chart(r.current,{type:"doughnut",data:{labels:["Kebutuhan wajib","Dana darurat","Investasi & goals"],datasets:[{data:v,backgroundColor:["#64748b","#34d399","#059669"],borderWidth:0}]},options:{cutout:"68%",plugins:{legend:{display:false}},animation:{duration:700}}});
+    return()=>{c.current&&c.current.destroy()}},[v.join()]);
+  return <canvas ref={r}/>;
+}
+function Manager({d,px,setD}){
+  const m=d.mm,up=p=>setD(s=>({...s,mm:{...s.mm,...p}})),addTx=o=>setD(s=>({...s,tx:[{id:uid(),date:iso(new Date()),...o},...s.tx]}));
+  const [bf,setBf]=useState({name:"",amt:"",tenor:"",left:"",due:""}),[df,setDf]=useState({name:"",target:"",months:""}),[dep,setDep]=useState({});
+  const mk=iso(new Date()).slice(0,7),pri=m.mode==="pri";
+  const sal=useMemo(()=>{const g=d.tx.filter(t=>t.type==="income"&&t.cat==="Gaji");const cur=g.filter(t=>t.date.startsWith(mk)).reduce((s,t)=>s+t.amt,0);if(cur)return cur;const l=[...g].sort((a,b)=>b.date.localeCompare(a.date))[0];return l?l.amt:0},[d.tx]);
+  const commute=Math.round(num(m.amt)*dec(m.freq)*4.33);
+  const bills=m.bills.filter(b=>b.left>0).reduce((s,b)=>s+b.amt,0);
+  const needs=commute+bills,ef=Math.round(sal*.15),inv=Math.max(0,sal-needs-ef);
+  const debtPct=sal?bills/sal*100:0,needPct=sal?needs/sal*100:0;
+  const [hc,hl]=!sal?["slate","Belum ada Gaji"]:debtPct>30?["red","Beban cicilan terlalu tinggi"]:needPct>50?["amber","Kebutuhan wajib besar"]:["emerald","Sehat"];
+  const cash=d.tx.reduce((s,t)=>s+(t.type==="income"?t.amt:-t.amt),0);
+  const dsum=x=>x.saved+d.inv.reduce((s,a)=>s+(a.goal===x.id?val(a,px):0),0);
+  const nw=cash+d.inv.reduce((s,a)=>s+val(a,px),0)+m.dreams.reduce((s,x)=>s+x.saved,0);
+  const mo=x=>Math.max(0,Math.ceil((x.target-dsum(x))/x.months));
+  const gTot=m.dreams.reduce((s,x)=>s+mo(x),0);
+  const eta=n=>{const t=new Date();t.setMonth(t.getMonth()+n);return t.toLocaleDateString("id-ID",{month:"long",year:"numeric"})};
+  const addBill=()=>{const a=num(bf.amt),t=num(bf.tenor),l=bf.left===""?t:Math.min(t,num(bf.left));if(!bf.name.trim()||!a||!t)return;up({bills:[...m.bills,{id:uid(),name:bf.name.trim(),amt:a,tenor:t,left:l,due:Math.min(31,num(bf.due)),last:""}]});setBf({name:"",amt:"",tenor:"",left:"",due:""})};
+  const payBill=b=>{addTx({type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name});up({bills:m.bills.map(x=>x.id===b.id?{...x,left:x.left-1,last:mk}:x)})};
+  const addDream=()=>{const t=num(df.target),n=num(df.months);if(!df.name.trim()||!t||!n)return;up({dreams:[...m.dreams,{id:uid(),name:df.name.trim(),target:t,saved:0,months:n}]});setDf({name:"",target:"",months:""})};
+  const deposit=x=>{const n=num(dep[x.id]);if(!n)return;addTx({type:"transfer",amt:n,cat:"Tabungan",note:"Setor: "+x.name});up({dreams:m.dreams.map(y=>y.id===x.id?{...y,saved:y.saved+n}:y)});setDep({...dep,[x.id]:""})};
+  const hasEf=m.dreams.some(x=>/darurat/i.test(x.name));
+  return <div className="st space-y-5">
+    <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white p-6 shadow-xl shadow-emerald-600/20">
+      <p className="text-sm text-emerald-100">Net worth (kas + aset)</p><p className="text-3xl font-extrabold mt-1"><Count v={nw}/></p>
+      <div className="flex gap-3 mt-4 text-xs"><div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-emerald-100">Saldo kas</p><p className="font-bold text-sm mt-1">{rp(cash)}</p></div><div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-emerald-100">Gaji acuan</p><p className="font-bold text-sm mt-1">{rp(sal)}</p></div></div>
+    </div>
+    <Card className="p-5"><div className="flex items-center justify-between mb-3 gap-2"><h2 className="font-bold">Rekomendasi alokasi</h2><span className={"text-xs font-bold rounded-full px-3 py-1 transition "+HC[hc]}>{hl}</span></div>
+      {sal?<div className="flex flex-col sm:flex-row items-center gap-5"><div className="w-40 h-40 shrink-0"><AllocChart v={[needs,ef,inv]}/></div>
+        <div className="w-full space-y-2.5 text-sm">{[["Kebutuhan wajib",needs,"#64748b"],["Dana darurat (15%)",ef,"#34d399"],["Investasi & goals",inv,"#059669"]].map(([l,v,c])=><div key={l} className="flex items-center gap-3"><i className="w-3 h-3 rounded-full shrink-0" style={{background:c}}/><span className="flex-1 font-medium">{l}</span><span className="text-slate-400">{Math.round(v/sal*100)}%</span><span className="font-semibold w-24 text-right">{rp(v)}</span></div>)}
+          <p className="text-xs text-slate-400 pt-1">Cicilan {debtPct.toFixed(0)}% dari gaji (batas sehat 30%). Hanya pemasukan kategori Gaji yang dihitung.</p></div></div>:<Empty t="Catat pemasukan kategori Gaji dulu."/>}
+    </Card>
+    <Card className="p-5"><h2 className="font-bold mb-3">Estimasi transportasi</h2>
+      <div className="relative grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl mb-4"><span className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-lg bg-white shadow transition-transform duration-300" style={{transform:pri?"translateX(0)":"translateX(100%)"}}/>
+        {[["pri","Kendaraan pribadi","car"],["pub","Transportasi umum","bus"]].map(([k,l,ic])=><button key={k} onClick={()=>up({mode:k})} className={"relative py-2.5 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors "+(m.mode===k?"text-emerald-700":"text-slate-500")}><I n={ic} s={16}/>{l}</button>)}</div>
+      <div className="grid grid-cols-2 gap-3"><Lbl t={pri?"Sekali isi bensin":"Tarif sekali jalan"}><MoneyIn v={m.amt} set={v=>up({amt:v})} ph="50.000"/></Lbl><Lbl t={pri?"Isi bensin / minggu":"Perjalanan / minggu"}><DecIn v={m.freq} set={v=>up({freq:v})} ph="2"/></Lbl></div>
+      <div className="flex items-center justify-between rounded-xl bg-emerald-50 p-3"><div><p className="text-xs text-emerald-700">Estimasi per bulan (x4,33)</p><p className="font-extrabold text-emerald-800">{rp(commute)}</p></div><Btn className="!py-2 disabled:opacity-50" disabled={!commute} onClick={()=>{addTx({type:"expense",amt:commute,cat:"Transportasi",note:"Transportasi bulanan"});up({trLast:mk})}}>Catat</Btn></div>
+      <label className="flex items-center gap-2 mt-3 text-xs font-semibold text-slate-600 cursor-pointer"><input type="checkbox" className="w-4 h-4 accent-emerald-600" checked={!!m.trAuto} onChange={e=>up({trAuto:e.target.checked})}/>Potong otomatis dari saldo tiap bulan</label>
+    </Card>
+    <Card className="p-5"><h2 className="font-bold mb-3">Cicilan & tagihan tetap</h2>
+      <div className="grid grid-cols-2 gap-x-3"><Lbl t="Nama tagihan"><input className={inp} value={bf.name} onChange={e=>setBf({...bf,name:e.target.value})} placeholder="Cicilan motor"/></Lbl><Lbl t="Nominal bulanan"><MoneyIn v={bf.amt} set={v=>setBf({...bf,amt:v})} ph="900.000"/></Lbl>
+        <Lbl t="Tenor total (bulan)"><MoneyIn rpx={false} v={bf.tenor} set={v=>setBf({...bf,tenor:v})} ph="24"/></Lbl><Lbl t="Sisa tenor (opsional)"><MoneyIn rpx={false} v={bf.left} set={v=>setBf({...bf,left:v})} ph="sama dengan tenor"/></Lbl><div className="col-span-2"><Lbl t="Tanggal jatuh tempo (opsional, dipotong otomatis dari saldo)"><MoneyIn rpx={false} v={bf.due} set={v=>setBf({...bf,due:v})} ph="25"/></Lbl></div></div>
+      <Btn className="w-full mb-4 flex items-center justify-center gap-1.5" onClick={addBill}><I n="plus" s={16}/>Tambah tagihan</Btn>
+      {m.bills.length?m.bills.map(b=>{const pc=(b.tenor-b.left)/b.tenor*100;return <div key={b.id} className="pgb rounded-xl bg-slate-50 p-3 mb-2">
+        <div className="flex items-center justify-between gap-2"><div className="min-w-0"><p className="font-semibold text-sm truncate">{b.name}</p><p className="text-xs text-slate-400">{rp(b.amt)}/bln - sisa {b.left} dari {b.tenor} bulan</p></div>
+          <div className="flex items-center gap-1 shrink-0"><Btn className="!py-1.5 !px-3 !text-xs disabled:opacity-50" disabled={!b.left} onClick={()=>payBill(b)}>Bayar</Btn><button aria-label="Hapus tagihan" onClick={()=>confirm("Hapus tagihan ini?")&&up({bills:m.bills.filter(x=>x.id!==b.id)})} className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></div></div>
+        <div className="h-2 rounded-full bg-slate-200 overflow-hidden mt-2"><div className="bar h-full rounded-full bg-emerald-500" style={{width:pc+"%"}}/></div>
+        <p className="text-[11px] text-slate-500 mt-1.5">{pc.toFixed(0)}% terbayar - {b.left?"estimasi lunas "+eta(b.left):"Lunas"}{b.due&&b.left?" - jatuh tempo tgl "+b.due:""}</p></div>}):<Empty t="Belum ada cicilan atau tagihan."/>}
+    </Card>
+    <Card className="p-5"><div className="flex items-center justify-between mb-3 gap-2"><h2 className="font-bold">Goals & dana darurat</h2>{sal>0&&!hasEf&&<button onClick={()=>up({dreams:[...m.dreams,{id:uid(),name:"Dana Darurat 6x Gaji",target:sal*6,saved:0,months:12}]})} className="text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-full px-3 py-1.5">+ Dana darurat 6x gaji</button>}</div>
+      <div className="grid grid-cols-2 gap-x-3"><div className="col-span-2"><Lbl t="Target impian"><input className={inp} value={df.name} onChange={e=>setDf({...df,name:e.target.value})} placeholder="Liburan ke Jepang"/></Lbl></div>
+        <Lbl t="Target nominal"><MoneyIn v={df.target} set={v=>setDf({...df,target:v})} ph="30.000.000"/></Lbl><Lbl t="Tenggat (bulan lagi)"><MoneyIn rpx={false} v={df.months} set={v=>setDf({...df,months:v})} ph="12"/></Lbl></div>
+      <Btn className="w-full mb-4 flex items-center justify-center gap-1.5" onClick={addDream}><I n="plus" s={16}/>Tambah target</Btn>
+      {m.dreams.length?<>{m.dreams.map(x=>{const sv=dsum(x),pc=Math.min(100,sv/x.target*100);return <div key={x.id} className="pgb rounded-xl bg-slate-50 p-3 mb-2">
+        <div className="flex items-center justify-between gap-2"><p className="font-semibold text-sm truncate">{x.name}</p><button aria-label="Hapus target" onClick={()=>confirm("Hapus target ini?")&&up({dreams:m.dreams.filter(y=>y.id!==x.id)})} className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></div>
+        <p className="text-xs text-slate-400">Target {rp(x.target)} dalam {x.months} bulan</p>
+        <div className="h-2 rounded-full bg-slate-200 overflow-hidden mt-2"><div className="bar h-full rounded-full bg-emerald-500" style={{width:pc+"%"}}/></div>
+        <div className="flex justify-between text-xs mt-1.5"><span className="text-slate-500">{pc.toFixed(0)}% ({rp(sv)})</span><span className="font-bold text-emerald-700">Setoran {rp(mo(x))}/bln</span></div>
+        <div className="flex gap-2 mt-2"><div className="flex-1 min-w-0"><MoneyIn v={dep[x.id]||""} set={v=>setDep({...dep,[x.id]:v})} ph="Nominal setor"/></div><Btn className="!py-2" onClick={()=>deposit(x)}>Setor</Btn></div></div>})}
+        {sal>0&&<p className={"text-xs font-semibold mt-2 "+(gTot>inv?"text-red-600":"text-emerald-700")}>Total setoran {rp(gTot)}/bln dari jatah investasi & goals {rp(inv)}{gTot>inv?" - melebihi jatah, perpanjang tenggat.":"."}</p>}</>:<Empty t="Belum ada target."/>}
+    </Card>
+  </div>;
+}
+
 function App(){
   const [d,setD]=useState(load),[tab,setTab]=useState("home"),[modal,setModal]=useState(null),[gid,setGid]=useState(null),[fresh,setFresh]=useState(null);
+  const [tm,setTm]=useState(null),[boom,setBoom]=useState(0),[cvBusy,setCvBusy]=useState(null);
+  const busyRef=React.useRef(null),tried=React.useRef({});
+  const toast=(m,bad)=>setTm({m,bad,k:Date.now()});
+  useEffect(()=>{if(!tm)return;const t=setTimeout(()=>setTm(null),2400);return()=>clearTimeout(t)},[tm]);
+  useEffect(()=>{if(!boom)return;const t=setTimeout(()=>setBoom(0),1800);return()=>clearTimeout(t)},[boom]);
   useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}},[d]);
+  useEffect(()=>{const t=new Date(),mk=iso(t).slice(0,7),day=t.getDate(),dt=iso(t);
+    setD(s=>{const m=s.mm;let tx=s.tx,ch=false,trLast=m.trLast;
+      const bills=m.bills.map(b=>{if(b.due&&b.left>0&&b.last!==mk&&day>=b.due){ch=true;tx=[{id:uid(),type:"expense",amt:b.amt,cat:"Tagihan",note:"Cicilan: "+b.name,date:dt},...tx];return{...b,left:b.left-1,last:mk}}return b});
+      const cm=Math.round(num(m.amt)*dec(m.freq)*4.33);
+      if(m.trAuto&&cm>0&&trLast!==mk){ch=true;trLast=mk;tx=[{id:uid(),type:"expense",amt:cm,cat:"Transportasi",note:"Transportasi bulanan",date:dt},...tx]}
+      return ch?{...s,tx,mm:{...m,bills,trLast}}:s})},[d.mm.bills.length,d.mm.trAuto]);
   const [px,setPx]=useState(()=>{try{return JSON.parse(localStorage.getItem("xav_px"))||{}}catch(e){return {}}});
   const [pxt,setPxt]=useState(0),[pxe,setPxe]=useState("");
   const refresh=async()=>{
     const items=[...new Set(d.inv.filter(a=>!a.manual).map(a=>a.sym+":"+a.kind))];
     if(!items.length)return;
-    try{const r=await fetch("/api/prices?items="+encodeURIComponent(items.join(",")));if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();
+    try{const r=await fetch("/api/prices?items="+encodeURIComponent(items.join(",")));
+      if(r.status===404)throw new Error("fungsi /api/prices tidak ditemukan. Pastikan prices.mjs ada di folder netlify/functions/ lalu deploy ulang");
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      const j=await r.json().catch(()=>null);if(!j||!j.data)throw new Error("respons tidak valid, fungsi belum aktif");
       setPx(s=>{const n={...s};for(const it in j.data){const sy=it.split(":")[0],x=j.data[it];if(!x.error||!(n[sy]&&n[sy].price))n[sy]=x}return n});
       setPxt(Date.now());setPxe("")}
-    catch(e){setPxe("Harga belum bisa dimuat ("+e.message+"). Fitur harga asli butuh deploy ke Netlify.")}
+    catch(e){setPxe("Harga belum bisa dimuat: "+e.message+".")}
   };
   useEffect(()=>{refresh();const t=setInterval(refresh,60000);return()=>clearInterval(t)},[d.inv.length]);
   useEffect(()=>{try{localStorage.setItem("xav_px",JSON.stringify(px))}catch(e){}},[px]);
   useEffect(()=>{if(d.inv.some(a=>a.cost==null&&px[a.sym]&&px[a.sym].price))setD(s=>({...s,inv:s.inv.map(a=>a.cost==null&&px[a.sym]&&px[a.sym].price?{...a,cost:Math.round(a.units*px[a.sym].price)}:a)}))},[px,d.inv]);
-  const tabs=[["home","Home","home"],["analytics","Analytics","chart"],["goals","Goals","target"],["invest","Investments","trend"]];
-  const save=x=>{
-    if(modal==="tx"){setD(s=>({...s,tx:[x,...s.tx]}));setFresh(x.id);setTab("home")}
-    if(modal==="goal"){setD(s=>({...s,goals:[x,...s.goals]}));setTab("goals")}
-    if(modal==="inv"){setD(s=>({...s,inv:[...s.inv,x]}));setTab("invest")}
+  const genCover=async(g,force)=>{
+    if(busyRef.current)return;busyRef.current=g.id;setCvBusy(g.id);
+    try{const r=await fetch("/api/cover",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:g.name,cat:g.cat})});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok||!j.image)throw new Error(r.status===404?"fungsi /api/cover belum ada":(j.error||("HTTP "+r.status)));
+      const img=await shrink(j.image);
+      setD(s=>({...s,goals:s.goals.map(x=>x.id===g.id?{...x,cover:img,cvTry:0}:x)}));
+      if(force)toast("Gambar AI siap")}
+    catch(e){setD(s=>({...s,goals:s.goals.map(x=>x.id===g.id?{...x,cvTry:(x.cvTry||0)+1}:x)}));if(force)toast("Gagal buat gambar: "+e.message,true)}
+    busyRef.current=null;setCvBusy(null);
   };
-  const addSave=(id,n)=>setD(s=>({...s,goals:s.goals.map(g=>g.id===id?{...g,saved:g.saved+n,hist:[{d:iso(new Date()),amt:n},...g.hist]}:g)}));
+  const tabs=[["home","Beranda","home"],["analytics","Analitik","chart"],["manager","Manager","wallet"],["invest","Investasi","trend"]];
+  const nav=k=>{setTab(k);scrollTo({top:0})};
+  const save=x=>{
+    if(modal==="tx"){setD(s=>({...s,tx:[x,...s.tx]}));setFresh(x.id);nav("home");toast("Transaksi tersimpan")}
+    if(modal==="goal"){setD(s=>({...s,goals:[x,...s.goals]}));nav("goals");toast("Tujuan dibuat")}
+    if(modal==="inv"){setD(s=>({...s,inv:[...s.inv,x]}));nav("invest");toast("Investasi ditambahkan")}
+  };
+  const addSave=(id,n)=>{
+    const gg=d.goals.find(x=>x.id===id);if(!gg)return;
+    const before=gsum(gg,d.inv,px);
+    setD(s=>({...s,goals:s.goals.map(x=>x.id===id?{...x,saved:x.saved+n,hist:[{d:iso(new Date()),amt:n},...x.hist]}:x)}));
+    if(before<gg.target&&before+n>=gg.target){setBoom(Date.now());toast("Tujuan tercapai!")}else toast("Tabungan ditambahkan");
+  };
   const g=d.goals.find(x=>x.id===gid);
-  const title={home:"Beranda",analytics:"Analitik",goals:"Goals",invest:"Investasi"}[tab];
-  const nav=(k)=>{setTab(k);scrollTo({top:0})};
+  const title={home:"Beranda",analytics:"Analitik",manager:"Money Manager",invest:"Investasi"}[tab];
+  const idx=tabs.findIndex(t=>t[0]===tab);
   return <div className="min-h-screen md:pl-64">
     <aside className="hidden md:flex fixed inset-y-0 left-0 w-64 bg-white border-r border-slate-100 flex-col p-5">
-      <div className="flex items-center gap-3 mb-8 px-2"><span className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-800 text-white flex items-center justify-center font-extrabold text-lg">X</span><span className="text-xl font-extrabold tracking-tight">Xav</span></div>
-      <nav className="space-y-1.5">{tabs.map(([k,l,ic])=><button key={k} onClick={()=>nav(k)} className={"w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition "+(tab===k?"bg-emerald-50 text-emerald-700":"text-slate-500 hover:bg-slate-50")}><I n={ic} s={20}/>{l}</button>)}</nav>
+      <div className="flex items-center gap-3 mb-8 px-2"><Logo s={40}/><span className="text-2xl font-extrabold tracking-tight lowercase">xav</span></div>
+      <nav className="space-y-1.5">{tabs.map(([k,l,ic])=><button key={k} onClick={()=>nav(k)} className={"w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all hover:translate-x-1 "+(tab===k?"bg-emerald-50 text-emerald-700":"text-slate-500 hover:bg-slate-50")}><I n={ic} s={20}/>{l}</button>)}</nav>
       <Btn className="mt-auto flex items-center justify-center gap-2" onClick={()=>setModal("tx")}><I n="plus" s={18}/>Transaksi</Btn>
     </aside>
     <header className="sticky top-0 z-30 bg-white/85 backdrop-blur border-b border-slate-100" style={{paddingTop:"env(safe-area-inset-top)"}}>
       <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2.5"><span className="md:hidden w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-800 text-white flex items-center justify-center font-extrabold">X</span><h1 className="text-lg font-extrabold">{title}</h1></div>
-        <button onClick={()=>setModal("tx")} className="md:hidden w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center active:scale-95" aria-label="Tambah transaksi"><I n="plus"/></button>
+        <div className="flex items-center gap-2.5"><span className="md:hidden"><Logo s={36}/></span><h1 className="text-lg font-extrabold">{title}</h1></div>
+        <button onClick={()=>setModal("tx")} className="md:hidden w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center active:scale-90 transition" aria-label="Tambah transaksi"><I n="plus"/></button>
       </div></header>
     <main className="max-w-3xl mx-auto px-4 py-5 pb-28 md:pb-10" key={tab}>
-      {tab==="home"&&<Home d={d} setTab={nav} open={setModal} fresh={fresh} reset={()=>confirm("Ganti semua data dengan data contoh?")&&setD(sample())} clear={()=>confirm("Hapus semua data?")&&setD({tx:[],goals:[],inv:[]})}/>}
+      {tab==="home"&&<Home d={d} setTab={nav} open={setModal} fresh={fresh} reset={()=>confirm("Ganti semua data dengan data contoh?")&&setD(sample())} clear={()=>confirm("Hapus semua data?")&&setD({tx:[],goals:[],inv:[],mm:{mode:"pri",amt:"",freq:"",bills:[],dreams:[]}})}/>}
       {tab==="analytics"&&<Analytics d={d}/>}
-      {tab==="goals"&&<Goals d={d} open={setModal} pick={setGid}/>}
+      {tab==="manager"&&<Manager d={d} px={px} setD={setD}/>}
       {tab==="invest"&&<Invest d={d} px={px} refresh={refresh} pxt={pxt} pxe={pxe} open={setModal} del={id=>setD(s=>({...s,inv:s.inv.filter(a=>a.id!==id)}))}/>}
     </main>
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/90 backdrop-blur border-t border-slate-100 grid grid-cols-4" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>
-      {tabs.map(([k,l,ic])=><button key={k} onClick={()=>nav(k)} className={"py-2.5 flex flex-col items-center gap-1 text-[11px] font-semibold transition "+(tab===k?"text-emerald-700":"text-slate-400")}>
-        <span className={"px-5 py-1 rounded-full transition "+(tab===k?"bg-emerald-50":"")}><I n={ic} s={20}/></span>{l}</button>)}</nav>
-    {modal&&<AddModal kind={modal} onClose={()=>setModal(null)} onSave={save}/>}
-    {g&&<GoalModal g={g} onClose={()=>setGid(null)} onAdd={addSave} onDel={id=>setD(s=>({...s,goals:s.goals.filter(x=>x.id!==id)}))}/>}
+    <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/90 backdrop-blur border-t border-slate-100" style={{paddingBottom:"env(safe-area-inset-bottom)"}}>
+      <div className="relative grid grid-cols-4">
+        <div className="absolute top-0 left-0 w-1/4 flex justify-center pointer-events-none transition-transform duration-300 ease-out" style={{transform:`translateX(${idx*100}%)`}}><span className="mt-2.5 w-16 h-7 rounded-full bg-emerald-100"/></div>
+        {tabs.map(([k,l,ic])=><button key={k} onClick={()=>nav(k)} className={"relative py-2.5 flex flex-col items-center gap-1 text-[11px] font-semibold transition-colors "+(tab===k?"text-emerald-700":"text-slate-400")}><span className="px-5 py-1 inline-flex active:scale-90 transition-transform"><I n={ic} s={20}/></span>{l}</button>)}
+      </div></nav>
+    {modal&&<AddModal kind={modal} goals={d.mm.dreams} onClose={()=>setModal(null)} onSave={save}/>}
+    {g&&<GoalModal g={g} inv={d.inv} px={px} busy={cvBusy===g.id} onClose={()=>setGid(null)} onAdd={addSave} onGen={x=>genCover(x,true)} onDel={id=>setD(s=>({...s,goals:s.goals.filter(x=>x.id!==id),inv:s.inv.map(a=>a.goal===id?{...a,goal:null}:a)}))}/>}
+    {tm&&<div key={tm.k} role="status" className={"toast fixed left-1/2 bottom-24 md:bottom-8 z-[60] flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white shadow-xl max-w-[90vw] "+(tm.bad?"bg-red-600":"bg-slate-900")}>{!tm.bad&&<span className="tick w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0"><I n="check" s={12}/></span>}<span className="truncate">{tm.m}</span></div>}
+    {boom>0&&<Confetti k={boom}/>}
   </div>;
 }
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);

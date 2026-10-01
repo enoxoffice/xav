@@ -12,13 +12,16 @@ export default async (req) => {
   })).filter(a => a.series.length > 2);
   if (!assets.length) return json({ error: "Tidak ada aset dengan data harga." }, 400);
   const prompt = "Kamu analis pasar. Berikut harga penutupan harian aset (ternormalisasi, nilai pertama = 1, titik terakhir = terbaru). Untuk tiap aset beri status Bullish, Bearish, atau Netral berdasarkan tren, ringkasan singkat, dan saran singkat (hold, DCA, atau tunggu). Jawab HANYA JSON: {\"items\":[{\"name\":\"\",\"status\":\"\",\"summary\":\"\",\"action\":\"\"}],\"overall\":\"\"}. Bahasa Indonesia, tiap teks maksimal 20 kata.\n" + JSON.stringify(assets);
-  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })
-  });
-  const j = await r.json();
+  let r, j;
+  for (const model of [...new Set([process.env.GEMINI_MODEL, "gemini-3.8-flash", "gemini-2.5-flash"].filter(Boolean))]) {
+    r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })
+    });
+    j = await r.json().catch(() => ({}));
+    if (r.ok || r.status !== 404) break;
+  }
   if (!r.ok) return json({ error: (j.error && j.error.message) || "Gemini HTTP " + r.status }, 502);
   try {
     const t = (j.candidates[0].content.parts || []).filter(p => !p.thought).map(p => p.text || "").join("");
