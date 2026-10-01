@@ -453,9 +453,8 @@ function Manager({d,px,setD,toast}){
   const hasEf=m.dreams.some(x=>/darurat/i.test(x.name));
   return <div className="st space-y-5">
     <div className="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white p-6 shadow-xl shadow-emerald-600/20">
-      <p className="text-sm text-emerald-100">Net worth (kas + aset)</p><p className="text-3xl font-extrabold mt-1"><Count v={nw}/></p>
-      <div className="flex gap-3 mt-4 text-xs"><div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-emerald-100">Saldo kas</p><p className="font-bold text-sm mt-1">{rp(cash)}</p></div><div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-emerald-100">Gaji acuan</p><p className="font-bold text-sm mt-1">{rp(sal)}</p></div></div>
-      <p className="text-xs text-emerald-100 mt-3">Kas {rp(cash)} + investasi {rp(invV)} + tabungan target {rp(savV)}</p>
+      <p className="text-sm text-emerald-100">Saldo kas</p><p className="text-3xl font-extrabold mt-1"><Count v={cash}/></p>
+      <div className="flex gap-3 mt-4 text-xs"><div className="flex-1 rounded-2xl bg-white/15 p-3"><p className="text-emerald-100">Gaji acuan</p><p className="font-bold text-sm mt-1">{rp(sal)}</p></div></div>
     </div>
     <Card className="p-5"><div className="flex items-center justify-between mb-3 gap-2"><h2 className="font-bold">Rekomendasi alokasi</h2><span className={"text-xs font-bold rounded-full px-3 py-1 transition "+HC[hc]}>{hl}</span></div>
       {sal?<div className="flex flex-col sm:flex-row items-center gap-5"><div className="w-40 h-40 shrink-0"><AllocChart v={[needs,ef,inv]}/></div>
