@@ -359,7 +359,7 @@ function Goals({d,px,open,pick,busyId}){
         <p className="text-xs text-emerald-100/90 mt-3">{d.goals.length} tujuan aktif, terkumpul {rp(S)} dari {rp(T)} ({tp.toFixed(0)}%)</p></div>
     </div>
     <div className="flex items-center justify-between"><h2 className="font-bold">Tujuanku</h2><Btn onClick={()=>open("goal")} className="!py-2.5 flex items-center gap-1.5"><I n="plus" s={16}/>Tujuan baru</Btn></div>
-    {d.goals.length?<div className="grid sm:grid-cols-2 gap-4">{rows.map(({g,sv},i)=>{const pc=Math.min(100,sv/g.target*100),c=GC[g.cat]||GC.lainnya;
+    {d.goals.length?<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{rows.map(({g,sv},i)=>{const pc=Math.min(100,sv/g.target*100),c=GC[g.cat]||GC.lainnya;
       return <button key={g.id} onClick={()=>pick(g.id)} style={{animationDelay:i*60+"ms"}} className="pgb lift text-left bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <Cover g={g} busy={busyId===g.id}><span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-extrabold text-emerald-700">{pc>=100&&<I n="check" s={12}/>}{pc.toFixed(0)}%</span></Cover>
         <div className="p-4"><p className="font-bold truncate">{g.name}</p><p className="text-xs text-slate-400">{c.l} - Target {rp(g.target)}</p>
@@ -406,10 +406,10 @@ function Invest({d,px,refresh,pxt,pxe,open,del,topup,setval}){
         {s&&<p className="text-xs text-slate-500 mt-2">{rec(s)}</p>}
         {(()=>{const it=ai&&ai.items&&ai.items.find(i=>i.name===a.name);return it?<p className="text-xs text-emerald-800 bg-emerald-50 rounded-lg px-3 py-2 mt-2"><b>Gemini: {it.status}.</b> {it.summary} {it.action}</p>:null})()}</div>})}</div>:<Empty t="Tambahkan aset untuk melihat status pasar."/>}</Card>
     <div className="flex items-center justify-between"><h2 className="font-bold">Aset investasi</h2><Btn onClick={()=>open("inv")} className="!py-2.5 flex items-center gap-1.5"><I n="plus" s={16}/>Aset</Btn></div>
-    {d.inv.length?<div className="grid sm:grid-cols-2 gap-3">{rows.map(({a,v})=>{const c=a.cost||v,p=v-c;return <Card key={a.id} className="lift p-4 flex items-center gap-3">
+    {d.inv.length?<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{rows.map(({a,v})=>{const c=a.cost||v,p=v-c;return <Card key={a.id} className="lift p-4 flex items-center gap-3 min-w-0">
       <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0"><I n={a.type==="Emas"?"wallet":a.type==="Kripto"?"zap":a.type==="Saham"?"trend":"pie"}/></div>
       <div className="flex-1 min-w-0"><p className="font-semibold text-sm truncate">{a.name}</p><p className="text-xs text-slate-400">{a.type} - {unit(a)}</p>{gn(a.goal)&&<p className="text-[11px] font-semibold text-emerald-700 truncate mt-0.5">Untuk: {gn(a.goal)}</p>}{a.manual&&<div className="flex gap-3 mt-1"><button onClick={()=>{const n=num(prompt("Nominal top up (Rp)"));n>0&&topup(a,n)}} className="text-[11px] font-bold text-emerald-700">Top up</button>{!(a.units>0&&a.nav>0)&&<button onClick={()=>{const v=num(prompt("Nilai saat ini di aplikasi (Rp)"));v>0&&setval(a.id,v)}} className="text-[11px] font-bold text-slate-500">Update nilai</button>}</div>}</div>
-      <div className="text-right"><p className="font-bold text-sm">{rp(v)}</p><p className={"text-xs font-semibold "+(p>=0?"text-emerald-600":"text-red-500")}>{p>=0?"+":""}{sh(p)}</p></div>
+      <div className="text-right shrink-0"><p className="font-bold text-sm whitespace-nowrap">{rp(v)}</p><p className={"text-xs font-semibold "+(p>=0?"text-emerald-600":"text-red-500")}>{p>=0?"+":""}{sh(p)}</p></div>
       <button onClick={()=>confirm("Hapus aset ini?")&&del(a.id)} aria-label="Hapus aset" className="text-slate-300 hover:text-red-500 p-1"><I n="trash" s={16}/></button></Card>})}</div>:<Card><Empty t="Belum ada aset investasi."/></Card>}
   </div>;
 }
